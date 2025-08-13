@@ -1,0 +1,273 @@
+/* Aanganwadi Stats page styles */
+.aanganwadi-stats {
+  padding: 20px;
+  background: var(--light-gray);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.section-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-green);
+  margin: 0;
+}
+
+/* Search section styles */
+.search-section {
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 20px;
+  padding-right: 50px;
+  border: 2px solid #e1e1e1;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
+  background: white;
+}
+
+.search-input::placeholder {
+  color: #888;
+  font-size: 14px;
+}
+
+.clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.clear-search:hover {
+  background: #f0f0f0;
+  color: var(--primary-green);
+}
+
+.search-results {
+  font-size: 14px;
+  color: var(--secondary-brown);
+  font-weight: 500;
+  background: rgba(45, 90, 39, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.no-results p {
+  color: var(--dark-gray);
+  font-size: 16px;
+  margin: 0;
+}
+
+.aanganwadi-section {
+  margin-top: 32px;
+  width: 100%;
+}
+
+.aanganwadi-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.aanganwadi-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-green);
+  margin: 0;
+}
+
+.aanganwadi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.aanganwadi-card {
+  padding: 20px;
+}
+
+.aanganwadi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.aanganwadi-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-green);
+  margin: 0;
+  flex: 1;
+}
+
+.sector-tag {
+  background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.aanganwadi-info p {
+  margin: 6px 0;
+  color: var(--dark-gray);
+  font-size: 14px;
+}
+
+.capacity-info {
+  margin-top: 16px;
+}
+
+.capacity-bar {
+  width: 100%;
+  height: 8px;
+  background: #e1e1e1;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.capacity-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.capacity-text {
+  font-size: 12px;
+  color: var(--dark-gray);
+  font-weight: 500;
+}
+
+/* Add form styles */
+.add-form {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--light-gray);
+  padding-top: 20px;
+}
+
+.form-input[rows] {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Modal specific styles */
+.modal-content h2 {
+  color: var(--primary-green);
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .aanganwadi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .search-input {
+    font-size: 14px;
+    padding: 12px 16px;
+    padding-right: 45px;
+  }
+  
+  .search-input::placeholder {
+    font-size: 12px;
+  }
+  
+  .aanganwadi-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .aanganwadi-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
