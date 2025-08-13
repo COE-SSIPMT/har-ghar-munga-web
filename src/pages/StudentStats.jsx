@@ -1,161 +1,212 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import '../styles/StudentStats.css';
+// Styles merged from StudentStats.css
 
 const StudentStats = ({ onLogout }) => {
   const [filters, setFilters] = useState({
-    pariyojna: '',
-    sector: '',
-    aanganwadi: '',
-    student: ''
+    sp_id: '',
+    ss_id: '',
+    sk_id: '',
+    s_healtha_status: '',
+    s_age: ''
   });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Sample data
+  // Sample data based on master_student schema
   const students = [
     {
-      id: 285,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'jaya manikpuri',
+      s_id: 285,
+      sp_id: 1,
+      ss_id: 2,
+      sk_id: 15,
+      s_name: 'जया मानिकपुरी',
       s_mobile: 8602214560,
       s_father: 'रामेश कुमार',
       s_mother: 'सुनीता देवी',
-      s_gender: 'लड़की',
-      s_dob: '9/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'DHARSIWA',
-      village: 'नयागांव'
+      s_height: '95 cm',
+      s_weight: '14.5 kg',
+      s_age: 3,
+      s_dob: '2022-01-15',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'वार्ड 12, नयागांव, धरसीवा',
+      pariyojna_name: 'पोषण आहार',
+      sector_name: 'ग्रामीण',
+      kendra_name: 'CHC RAIPUR'
     },
     {
-      id: 284,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'manisha sawara',
+      s_id: 284,
+      sp_id: 1,
+      ss_id: 2,
+      sk_id: 15,
+      s_name: 'मनीषा सवारा',
       s_mobile: 9244832337,
       s_father: 'अनिल शर्मा',
       s_mother: 'रीता शर्मा',
-      s_gender: 'लड़की',
-      s_dob: '8/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'ARANG',
-      village: 'रामपुर'
+      s_height: '98 cm',
+      s_weight: '15.2 kg',
+      s_age: 4,
+      s_dob: '2021-05-20',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'मुख्य रोड, रामपुर, अरंग',
+      pariyojna_name: 'पोषण आहार',
+      sector_name: 'ग्रामीण',
+      kendra_name: 'CHC RAIPUR'
     },
     {
-      id: 283,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'anjali chelak',
+      s_id: 283,
+      sp_id: 2,
+      ss_id: 1,
+      sk_id: 12,
+      s_name: 'अंजली चेलक',
       s_mobile: 9238189517,
       s_father: 'विजय सिंह',
       s_mother: 'कमला देवी',
-      s_gender: 'लड़का',
-      s_dob: '6/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'ARANG',
-      village: 'शिवपुर'
+      s_height: '102 cm',
+      s_weight: '16.8 kg',
+      s_age: 4,
+      s_dob: '2021-03-10',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'टोला नंबर 5, शिवपुर, अरंग',
+      pariyojna_name: 'स्वास्थ्य सेवा',
+      sector_name: 'शहरी',
+      kendra_name: 'आंगनवाड़ी केंद्र 12'
     },
     {
-      id: 282,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'payal patel',
+      s_id: 282,
+      sp_id: 1,
+      ss_id: 2,
+      sk_id: 15,
+      s_name: 'पायल पटेल',
       s_mobile: 6260202235,
-      s_father: 'राम लाल',
+      s_father: 'राम लाल पटेल',
       s_mother: 'गीता देवी',
-      s_gender: 'लड़का',
-      s_dob: '6/8/2025',
-      s_health_status: 'सामान्य स्वस्थ',
-      s_vaccination: 'इनकॉम्प्लीट',
-      district: 'ARANG',
-      village: 'पटेल नगर'
+      s_height: '89 cm',
+      s_weight: '12.3 kg',
+      s_age: 2,
+      s_dob: '2022-11-05',
+      s_healtha_status: 'सामान्य',
+      s_address: 'पटेल नगर, वार्ड 8, अरंग',
+      pariyojna_name: 'पोषण आहार',
+      sector_name: 'ग्रामीण',
+      kendra_name: 'CHC RAIPUR'
     },
     {
-      id: 281,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'Hiraundi Sahu',
+      s_id: 281,
+      sp_id: 3,
+      ss_id: 2,
+      sk_id: 18,
+      s_name: 'हिरौंदी साहू',
       s_mobile: 9617722218,
       s_father: 'सुरेश साहू',
       s_mother: 'सुमित्रा साहू',
-      s_gender: 'लड़की',
-      s_dob: '5/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'ARANG',
-      village: 'साहू टोला'
+      s_height: '105 cm',
+      s_weight: '18.1 kg',
+      s_age: 5,
+      s_dob: '2020-08-12',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'साहू टोला, मुख्य गांव, अरंग',
+      pariyojna_name: 'शिक्षा कार्यक्रम',
+      sector_name: 'ग्रामीण',
+      kendra_name: 'प्राथमिक स्वास्थ्य केंद्र 18'
     },
     {
-      id: 280,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'Jageshwari Tondon',
+      s_id: 280,
+      sp_id: 1,
+      ss_id: 1,
+      sk_id: 10,
+      s_name: 'जगेश्वरी टंडन',
       s_mobile: 8253091771,
       s_father: 'अजय टंडन',
       s_mother: 'प्रिया टंडन',
-      s_gender: 'लड़का',
-      s_dob: '5/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'ARANG',
-      village: 'टंडन वार्ड'
+      s_height: '100 cm',
+      s_weight: '16.5 kg',
+      s_age: 4,
+      s_dob: '2021-02-28',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'टंडन वार्ड, सेक्टर 3, अरंग',
+      pariyojna_name: 'पोषण आहार',
+      sector_name: 'शहरी',
+      kendra_name: 'शहरी आंगनवाड़ी 10'
     },
     {
-      id: 279,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'Ishwari yadav',
+      s_id: 279,
+      sp_id: 2,
+      ss_id: 2,
+      sk_id: 15,
+      s_name: 'ईश्वरी यादव',
       s_mobile: 9171286949,
       s_father: 'मुकेश यादव',
       s_mother: 'रेखा यादव',
-      s_gender: 'लड़का',
-      s_dob: '5/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'ARANG',
-      village: 'यादव टोला'
+      s_height: '92 cm',
+      s_weight: '13.8 kg',
+      s_age: 3,
+      s_dob: '2022-04-18',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'यादव टोला, ग्राम पंचायत, अरंग',
+      pariyojna_name: 'स्वास्थ्य सेवा',
+      sector_name: 'ग्रामीण',
+      kendra_name: 'CHC RAIPUR'
     },
     {
-      id: 278,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'Shashi Dhiwar',
+      s_id: 278,
+      sp_id: 1,
+      ss_id: 2,
+      sk_id: 20,
+      s_name: 'शशि धीवर',
       s_mobile: 7354894598,
       s_father: 'रामू धीवर',
       s_mother: 'सीता धीवर',
-      s_gender: 'लड़की',
-      s_dob: '4/8/2025',
-      s_health_status: 'सामान्य स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'ARANG',
-      village: 'धीवर गांव'
+      s_height: '87 cm',
+      s_weight: '11.9 kg',
+      s_age: 2,
+      s_dob: '2023-01-22',
+      s_healtha_status: 'कमज़ोर',
+      s_address: 'धीवर गांव, तालाब के पास, अरंग',
+      pariyojna_name: 'पोषण आहार',
+      sector_name: 'ग्रामीण',
+      kendra_name: 'ग्रामीण स्वास्थ्य केंद्र 20'
     },
     {
-      id: 277,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'Pallavi tandan',
+      s_id: 277,
+      sp_id: 3,
+      ss_id: 1,
+      sk_id: 8,
+      s_name: 'पल्लवी तांडन',
       s_mobile: 7049534595,
       s_father: 'राकेश तांडन',
       s_mother: 'माला तांडन',
-      s_gender: 'लड़का',
-      s_dob: '7/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'DHARSIWA',
-      village: 'तांडन नगर'
+      s_height: '110 cm',
+      s_weight: '20.2 kg',
+      s_age: 5,
+      s_dob: '2020-06-30',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'तांडन नगर, कॉलोनी रोड, धरसीवा',
+      pariyojna_name: 'शिक्षा कार्यक्रम',
+      sector_name: 'शहरी',
+      kendra_name: 'प्री-स्कूल केंद्र 8'
     },
     {
-      id: 276,
-      aanganwadi: 'CHC RAIPUR',
-      s_name: 'shayam kali kol',
+      s_id: 276,
+      sp_id: 2,
+      ss_id: 2,
+      sk_id: 22,
+      s_name: 'श्याम काली कोल',
       s_mobile: 6262549671,
       s_father: 'हरि कोल',
       s_mother: 'राधा कोल',
-      s_gender: 'लड़की',
-      s_dob: '5/8/2025',
-      s_health_status: 'पूर्ण स्वस्थ',
-      s_vaccination: 'कॉम्प्लीट',
-      district: 'DHARSIWA',
-      village: 'कोल बस्ती'
+      s_height: '96 cm',
+      s_weight: '14.8 kg',
+      s_age: 3,
+      s_dob: '2022-02-14',
+      s_healtha_status: 'स्वस्थ',
+      s_address: 'कोल बस्ती, पहाड़ी इलाका, धरसीवा',
+      pariyojna_name: 'स्वास्थ्य सेवा',
+      sector_name: 'ग्रामीण',
+      kendra_name: 'पहाड़ी स्वास्थ्य केंद्र 22'
     }
   ];
 
@@ -174,37 +225,45 @@ const StudentStats = ({ onLogout }) => {
     const matchesSearch = student.s_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.s_father.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.s_mother.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.aanganwadi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.district.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.village.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.s_health_status.toLowerCase().includes(searchTerm.toLowerCase());
+                         student.kendra_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.s_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.s_healtha_status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.pariyojna_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.sector_name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesSearch;
+    const matchesFilters = 
+      (!filters.sp_id || student.sp_id.toString() === filters.sp_id) &&
+      (!filters.ss_id || student.ss_id.toString() === filters.ss_id) &&
+      (!filters.sk_id || student.sk_id.toString() === filters.sk_id) &&
+      (!filters.s_healtha_status || student.s_healtha_status === filters.s_healtha_status) &&
+      (!filters.s_age || student.s_age.toString() === filters.s_age);
+    
+    return matchesSearch && matchesFilters;
   });
 
   const infoBoxData = [
     {
-      title: 'Total Students',
+      title: 'कुल बच्चे',
       count: filteredStudents.length.toString(),
-      icon: '👥',
+      icon: '�',
+      color: 'blue'
+    },
+    {
+      title: 'स्वस्थ बच्चे',
+      count: filteredStudents.filter(s => s.s_healtha_status === 'स्वस्थ').length.toString(),
+      icon: '💚',
       color: 'green'
     },
     {
-      title: 'Healthy Students',
-      count: filteredStudents.filter(s => s.s_health_status === 'पूर्ण स्वस्थ').length.toString(),
-      icon: '💚',
-      color: 'light-green'
-    },
-    {
-      title: 'Vaccinated',
-      count: filteredStudents.filter(s => s.s_vaccination === 'कॉम्प्लीट').length.toString(),
-      icon: '💉',
+      title: 'कमज़ोर बच्चे',
+      count: filteredStudents.filter(s => s.s_healtha_status === 'कमज़ोर').length.toString(),
+      icon: '⚠️',
       color: 'brown'
     },
     {
-      title: 'Active Records',
+      title: 'सक्रिय रिकॉर्ड',
       count: filteredStudents.length.toString(),
-      icon: '📝',
+      icon: '�',
       color: 'light-brown'
     }
   ];
@@ -221,43 +280,161 @@ const StudentStats = ({ onLogout }) => {
 
   const getHealthStatusColor = (status) => {
     switch (status) {
-      case 'स्वस्थ': return '#4CAF50';
-      case 'सामान्य': return '#2196F3';
-      case 'कमज़ोर': return '#FF9800';
-      case 'बीमार': return '#F44336';
-      default: return '#666';
+      case 'स्वस्थ': return '#10b981';
+      case 'सामान्य': return '#0ea5e9';
+      case 'कमज़ोर': return '#f59e0b';
+      case 'बीमार': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  const getHealthStatusBg = (status) => {
+    switch (status) {
+      case 'स्वस्थ': return '#dcfce7';
+      case 'सामान्य': return '#dbeafe';
+      case 'कमज़ोर': return '#fef3c7';
+      case 'बीमार': return '#fee2e2';
+      default: return '#f3f4f6';
     }
   };
 
   return (
-    <div className="dashboard-layout">
+    <div style={{ 
+      display: 'flex', 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+    }}>
       <Sidebar onLogout={onLogout} />
       
-  <main className="dashboard-main with-filters">
-        <div className="dashboard-header">
-          <h1>Student Statistics</h1>
-          <p>Manage and view student information</p>
+      <main style={{ 
+        flex: 1, 
+        marginLeft: '260px', 
+        padding: '100px 32px 32px 32px',
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+      }}>
+        {/* Government Header */}
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: '260px', 
+          right: 0, 
+          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+          padding: '20px 32px',
+          borderBottom: '3px solid #0ea5e9',
+          zIndex: 50,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <h1 style={{ 
+                fontSize: '28px', 
+                fontWeight: 700, 
+                color: '#ffffff',
+                margin: '0 0 4px 0',
+                letterSpacing: '0.5px'
+              }}>
+                छत्तीसगढ़ शासन | Student Management System
+              </h1>
+              <p style={{ 
+                fontSize: '14px', 
+                color: '#cbd5e1', 
+                margin: 0,
+                fontWeight: 500
+              }}>
+                HarGhar Munga Project - Student Statistics Portal
+              </p>
+            </div>
+            <div style={{
+              background: 'rgba(14, 165, 233, 0.2)',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              border: '1px solid rgba(14, 165, 233, 0.3)',
+              color: '#0ea5e9',
+              fontSize: '14px',
+              fontWeight: 600
+            }}>
+              <span style={{ color: '#22c55e', marginRight: '8px' }}>●</span>
+              Live Data
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="filters-section card">
-          <h3>Search & Filter</h3>
+        <div style={{ marginBottom: '32px', width: '100%', background: 'rgba(255, 255, 255, 0.95)', padding: '24px', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)', border: '2px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}>
+              🔍
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b', margin: 0 }}>खोज और फ़िल्टर</h3>
+          </div>
           
           {/* Search Bar */}
-          <div className="search-section">
-            <div className="search-bar">
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ position: 'relative', width: '100%' }}>
               <input
                 type="text"
-                placeholder="🔍 Search students by name, father, mother, address, or health status..."
+                placeholder="🔍 बच्चे का नाम, माता-पिता का नाम, पता, स्वास्थ्य स्थिति से खोजें..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="search-input"
+                style={{ 
+                  width: '100%', 
+                  padding: '16px 24px', 
+                  paddingRight: '60px', 
+                  border: '2px solid #e2e8f0', 
+                  borderRadius: '12px', 
+                  fontSize: '16px', 
+                  fontWeight: '500',
+                  transition: 'all 0.3s ease', 
+                  outline: 'none', 
+                  boxSizing: 'border-box',
+                  background: 'white'
+                }}
+                onFocus={(e) => { 
+                  e.target.style.borderColor = '#0ea5e9'; 
+                  e.target.style.boxShadow = '0 0 0 4px rgba(14, 165, 233, 0.1)'; 
+                }}
+                onBlur={(e) => { 
+                  e.target.style.borderColor = '#e2e8f0'; 
+                  e.target.style.boxShadow = 'none'; 
+                }}
               />
               {searchTerm && (
                 <button
-                  className="clear-search"
                   onClick={() => setSearchTerm('')}
-                  title="Clear search"
+                  title="खोज साफ़ करें"
+                  style={{ 
+                    position: 'absolute', 
+                    right: '16px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    background: '#ef4444', 
+                    border: 'none', 
+                    fontSize: '16px', 
+                    color: 'white', 
+                    cursor: 'pointer', 
+                    padding: '8px', 
+                    width: '32px', 
+                    height: '32px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    borderRadius: '8px', 
+                    transition: 'all 0.3s ease',
+                    fontWeight: 'bold'
+                  }}
+                  onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
+                  onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
                 >
                   ×
                 </button>
@@ -265,68 +442,142 @@ const StudentStats = ({ onLogout }) => {
             </div>
           </div>
 
-          <div className="filters-grid">
-            <div className="form-group">
-              <label className="form-label">Pariyojna</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', width: '100%' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>परियोजना</label>
               <select
-                name="pariyojna"
-                value={filters.pariyojna}
+                name="sp_id"
+                value={filters.sp_id}
                 onChange={handleFilterChange}
-                className="form-input"
+                style={{ 
+                  width: '100%', 
+                  padding: '12px 16px', 
+                  borderRadius: '8px', 
+                  border: '2px solid #e2e8f0', 
+                  fontSize: '14px', 
+                  fontWeight: '500',
+                  boxSizing: 'border-box',
+                  background: 'white',
+                  color: '#1e293b'
+                }}
               >
-                <option value="">Select Pariyojna</option>
-                <option value="nutrition">Nutrition Program</option>
-                <option value="education">Education Program</option>
-                <option value="health">Health Program</option>
+                <option value="">सभी परियोजनाएं</option>
+                <option value="1">पोषण आहार</option>
+                <option value="2">स्वास्थ्य सेवा</option>
+                <option value="3">शिक्षा कार्यक्रम</option>
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Sector</label>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>सेक्टर</label>
               <select
-                name="sector"
-                value={filters.sector}
+                name="ss_id"
+                value={filters.ss_id}
                 onChange={handleFilterChange}
-                className="form-input"
+                style={{ 
+                  width: '100%', 
+                  padding: '12px 16px', 
+                  borderRadius: '8px', 
+                  border: '2px solid #e2e8f0', 
+                  fontSize: '14px', 
+                  fontWeight: '500',
+                  boxSizing: 'border-box',
+                  background: 'white',
+                  color: '#1e293b'
+                }}
               >
-                <option value="">Select Sector</option>
-                <option value="urban">Urban</option>
-                <option value="rural">Rural</option>
-                <option value="semi-urban">Semi-Urban</option>
+                <option value="">सभी सेक्टर</option>
+                <option value="1">शहरी</option>
+                <option value="2">ग्रामीण</option>
+                <option value="3">अर्ध-शहरी</option>
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Aanganwadi Kendra</label>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>केंद्र ID</label>
               <select
-                name="aanganwadi"
-                value={filters.aanganwadi}
+                name="sk_id"
+                value={filters.sk_id}
                 onChange={handleFilterChange}
-                className="form-input"
+                style={{ 
+                  width: '100%', 
+                  padding: '12px 16px', 
+                  borderRadius: '8px', 
+                  border: '2px solid #e2e8f0', 
+                  fontSize: '14px', 
+                  fontWeight: '500',
+                  boxSizing: 'border-box',
+                  background: 'white',
+                  color: '#1e293b'
+                }}
               >
-                <option value="">Select Aanganwadi</option>
-                <option value="center1">Center 1 - Patna</option>
-                <option value="center2">Center 2 - Gaya</option>
-                <option value="center3">Center 3 - Muzaffarpur</option>
+                <option value="">सभी केंद्र</option>
+                <option value="8">प्री-स्कूल केंद्र 8</option>
+                <option value="10">शहरी आंगनवाड़ी 10</option>
+                <option value="12">आंगनवाड़ी केंद्र 12</option>
+                <option value="15">CHC RAIPUR</option>
+                <option value="18">प्राथमिक स्वास्थ्य केंद्र 18</option>
+                <option value="20">ग्रामीण स्वास्थ्य केंद्र 20</option>
+                <option value="22">पहाड़ी स्वास्थ्य केंद्र 22</option>
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Student</label>
-              <input
-                type="text"
-                name="student"
-                value={filters.student}
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>स्वास्थ्य स्थिति</label>
+              <select
+                name="s_healtha_status"
+                value={filters.s_healtha_status}
                 onChange={handleFilterChange}
-                className="form-input"
-                placeholder="Search student name..."
-              />
+                style={{ 
+                  width: '100%', 
+                  padding: '12px 16px', 
+                  borderRadius: '8px', 
+                  border: '2px solid #e2e8f0', 
+                  fontSize: '14px', 
+                  fontWeight: '500',
+                  boxSizing: 'border-box',
+                  background: 'white',
+                  color: '#1e293b'
+                }}
+              >
+                <option value="">सभी स्थितियां</option>
+                <option value="स्वस्थ">स्वस्थ</option>
+                <option value="सामान्य">सामान्य</option>
+                <option value="कमज़ोर">कमज़ोर</option>
+                <option value="बीमार">बीमार</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>उम्र</label>
+              <select
+                name="s_age"
+                value={filters.s_age}
+                onChange={handleFilterChange}
+                style={{ 
+                  width: '100%', 
+                  padding: '12px 16px', 
+                  borderRadius: '8px', 
+                  border: '2px solid #e2e8f0', 
+                  fontSize: '14px', 
+                  fontWeight: '500',
+                  boxSizing: 'border-box',
+                  background: 'white',
+                  color: '#1e293b'
+                }}
+              >
+                <option value="">सभी उम्र</option>
+                <option value="2">2 साल</option>
+                <option value="3">3 साल</option>
+                <option value="4">4 साल</option>
+                <option value="5">5 साल</option>
+              </select>
             </div>
           </div>
         </div>
 
         {/* Info Boxes */}
-        <div className="info-boxes-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginBottom: '32px', width: '100%' }}>
           {infoBoxData.map((item, index) => (
             <InfoBox
               key={index}
@@ -339,87 +590,248 @@ const StudentStats = ({ onLogout }) => {
         </div>
 
         {/* Students Table */}
-        <div className="students-section">
-          <div className="section-header">
-            <h3>बच्चों की सूची</h3>
-            {searchTerm && (
-              <span className="search-results">
-                Showing {filteredStudents.length} of {students.length} students
+        <div style={{ marginTop: '32px', width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                background: 'linear-gradient(135deg, #059669, #10b981)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}>
+                📋
+              </div>
+              <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b', margin: 0 }}>बच्चों की विस्तृत सूची</h3>
+            </div>
+            {(searchTerm || Object.values(filters).some(f => f)) && (
+              <span style={{ 
+                fontSize: '14px', 
+                color: '#0ea5e9', 
+                fontWeight: 600, 
+                background: 'rgba(14, 165, 233, 0.1)', 
+                padding: '8px 16px', 
+                borderRadius: '20px',
+                border: '1px solid rgba(14, 165, 233, 0.2)'
+              }}>
+                {filteredStudents.length} में से {students.length} बच्चे दिखाए गए
               </span>
             )}
           </div>
           
-          <div className="table-container">
+          <div style={{ 
+            background: 'rgba(255, 255, 255, 0.95)', 
+            borderRadius: '16px', 
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)', 
+            overflow: 'hidden', 
+            marginBottom: '32px', 
+            border: '2px solid #e2e8f0' 
+          }}>
             {filteredStudents.length > 0 ? (
-              <table className="students-table">
-                <thead>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                <thead style={{ background: 'linear-gradient(135deg, #1e293b, #334155)', color: 'white' }}>
                   <tr>
-                    <th>ID</th>
-                    <th>अस्पताल का नाम</th>
-                    <th>माता का नाम</th>
-                    <th>लिंग</th>
-                    <th>जन्म तिथि</th>
-                    <th>बच्चे का क्रम</th>
-                    <th>ब्लॉक</th>
-                    <th>प्रसव प्रकार</th>
-                    <th>स्थिति</th>
-                    <th>कार्य</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>ID</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>बच्चे का नाम</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>माता-पिता</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>शारीरिक विवरण</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>जन्म तिथि</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>स्वास्थ्य स्थिति</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>केंद्र</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>परियोजना</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>पता</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>कार्य</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student) => (
-                    <tr key={student.id}>
-                      <td><strong>{student.id}</strong></td>
-                      <td><strong>{student.aanganwadi}</strong></td>
-                      <td>
+                  {filteredStudents.map((student, index) => (
+                    <tr key={student.s_id} style={{ 
+                      borderBottom: '1px solid #e2e8f0', 
+                      transition: 'all 0.3s ease', 
+                      background: index % 2 === 0 ? 'white' : 'rgba(248, 250, 252, 0.8)' 
+                    }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'rgba(14, 165, 233, 0.05)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = index % 2 === 0 ? 'white' : 'rgba(248, 250, 252, 0.8)'}
+                    >
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
+                        <strong style={{ color: '#0ea5e9', fontWeight: 700, fontSize: '16px' }}>{student.s_id}</strong>
+                      </td>
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
                         <div>
-                          <strong>{student.s_name}</strong>
-                          <br />
-                          <small>{student.s_mobile}</small>
+                          <strong style={{ color: '#1e293b', fontWeight: 700, fontSize: '15px', display: 'block', marginBottom: '4px' }}>{student.s_name}</strong>
+                          <span style={{ color: '#64748b', fontSize: '13px', background: '#f1f5f9', padding: '2px 8px', borderRadius: '12px' }}>
+                            📱 {student.s_mobile}
+                          </span>
                         </div>
                       </td>
-                      <td>
-                        <span className={`gender-badge ${student.s_gender === 'लड़की' ? 'girl' : 'boy'}`}>
-                          {student.s_gender}
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
+                        <div style={{ lineHeight: '1.4' }}>
+                          <div style={{ color: '#1e293b', fontWeight: 600, marginBottom: '2px' }}>👨 {student.s_father}</div>
+                          <div style={{ color: '#1e293b', fontWeight: 600 }}>👩 {student.s_mother}</div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ 
+                            background: '#f0f9ff', 
+                            color: '#0369a1', 
+                            padding: '4px 8px', 
+                            borderRadius: '8px', 
+                            fontSize: '12px', 
+                            fontWeight: 600,
+                            textAlign: 'center'
+                          }}>
+                            📏 {student.s_height}
+                          </span>
+                          <span style={{ 
+                            background: '#f0fdf4', 
+                            color: '#166534', 
+                            padding: '4px 8px', 
+                            borderRadius: '8px', 
+                            fontSize: '12px', 
+                            fontWeight: 600,
+                            textAlign: 'center'
+                          }}>
+                            ⚖️ {student.s_weight}
+                          </span>
+                          <span style={{ 
+                            background: '#fef7ed', 
+                            color: '#c2410c', 
+                            padding: '4px 8px', 
+                            borderRadius: '8px', 
+                            fontSize: '12px', 
+                            fontWeight: 600,
+                            textAlign: 'center'
+                          }}>
+                            🎂 {student.s_age} साल
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px', color: '#1e293b', fontWeight: 600 }}>
+                        {new Date(student.s_dob).toLocaleDateString('hi-IN')}
+                      </td>
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
+                        <span style={{ 
+                          padding: '8px 16px', 
+                          borderRadius: '20px', 
+                          fontSize: '13px', 
+                          fontWeight: 600, 
+                          display: 'inline-block', 
+                          textAlign: 'center', 
+                          minWidth: '80px',
+                          background: getHealthStatusBg(student.s_healtha_status),
+                          color: getHealthStatusColor(student.s_healtha_status),
+                          border: `1px solid ${getHealthStatusColor(student.s_healtha_status)}30`
+                        }}>
+                          {student.s_healtha_status}
                         </span>
                       </td>
-                      <td>{student.s_dob}</td>
-                      <td>
-                        <span className="health-badge healthy">
-                          {student.s_health_status}
-                        </span>
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
+                        <div>
+                          <strong style={{ color: '#1e293b', fontWeight: 700, display: 'block', marginBottom: '4px' }}>{student.kendra_name}</strong>
+                          <span style={{ color: '#64748b', fontSize: '12px', background: '#f8fafc', padding: '2px 6px', borderRadius: '8px' }}>
+                            ID: {student.sk_id}
+                          </span>
+                        </div>
                       </td>
-                      <td><strong>{student.district}</strong></td>
-                      <td>
-                        <span className={`vaccination-badge ${student.s_vaccination === 'कॉम्प्लीट' ? 'complete' : 'incomplete'}`}>
-                          {student.s_vaccination}
-                        </span>
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
+                        <div>
+                          <span style={{ 
+                            background: '#eff6ff', 
+                            color: '#1d4ed8', 
+                            padding: '6px 12px', 
+                            borderRadius: '12px', 
+                            fontSize: '12px', 
+                            fontWeight: 600,
+                            display: 'block',
+                            textAlign: 'center',
+                            marginBottom: '4px'
+                          }}>
+                            {student.pariyojna_name}
+                          </span>
+                          <span style={{ 
+                            background: '#f0fdf4', 
+                            color: '#15803d', 
+                            padding: '4px 8px', 
+                            borderRadius: '8px', 
+                            fontSize: '11px', 
+                            fontWeight: 500,
+                            display: 'block',
+                            textAlign: 'center'
+                          }}>
+                            {student.sector_name}
+                          </span>
+                        </div>
                       </td>
-                      <td>
-                        <span className="status-badge active">
-                          सक्रिय
-                        </span>
+                      <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '13px', color: '#475569', maxWidth: '200px' }}>
+                        <div style={{ 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis', 
+                          whiteSpace: 'nowrap',
+                          fontWeight: 500
+                        }} title={student.s_address}>
+                          📍 {student.s_address}
+                        </div>
                       </td>
-                      <td>
-                        <div className="action-buttons">
+                      <td style={{ padding: '16px', verticalAlign: 'middle', fontSize: '14px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <button 
-                            className="btn-icon view"
                             onClick={() => openModal(student)}
-                            title="View Details"
+                            title="विवरण देखें"
+                            style={{ 
+                              background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', 
+                              border: 'none', 
+                              borderRadius: '8px', 
+                              width: '36px', 
+                              height: '36px', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              cursor: 'pointer', 
+                              transition: 'all 0.3s ease', 
+                              fontSize: '16px',
+                              color: 'white'
+                            }}
+                            onMouseOver={(e) => { 
+                              e.target.style.transform = 'translateY(-2px) scale(1.1)'; 
+                              e.target.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.4)';
+                            }}
+                            onMouseOut={(e) => { 
+                              e.target.style.transform = 'translateY(0) scale(1)'; 
+                              e.target.style.boxShadow = 'none';
+                            }}
                           >
                             👁️
                           </button>
                           <button 
-                            className="btn-icon edit"
-                            title="Edit"
+                            title="संपादित करें"
+                            style={{ 
+                              background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
+                              border: 'none', 
+                              borderRadius: '8px', 
+                              width: '36px', 
+                              height: '36px', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              cursor: 'pointer', 
+                              transition: 'all 0.3s ease', 
+                              fontSize: '16px',
+                              color: 'white'
+                            }}
+                            onMouseOver={(e) => { 
+                              e.target.style.transform = 'translateY(-2px) scale(1.1)'; 
+                              e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
+                            }}
+                            onMouseOut={(e) => { 
+                              e.target.style.transform = 'translateY(0) scale(1)'; 
+                              e.target.style.boxShadow = 'none';
+                            }}
                           >
                             ✏️
-                          </button>
-                          <button 
-                            className="btn-icon filter"
-                            title="Filter"
-                          >
-                            🔍
                           </button>
                         </div>
                       </td>
@@ -428,84 +840,538 @@ const StudentStats = ({ onLogout }) => {
                 </tbody>
               </table>
             ) : (
-              <div className="no-results">
-                <p>No students found matching your search criteria.</p>
+              <div style={{ 
+                padding: '60px 40px', 
+                textAlign: 'center',
+                background: 'white'
+              }}>
+                <div style={{
+                  fontSize: '48px',
+                  marginBottom: '16px'
+                }}>
+                  🔍
+                </div>
+                <h3 style={{ 
+                  color: '#1e293b', 
+                  fontSize: '20px', 
+                  fontWeight: 700,
+                  margin: '0 0 8px 0' 
+                }}>
+                  कोई डेटा नहीं मिला
+                </h3>
+                <p style={{ 
+                  color: '#64748b', 
+                  fontSize: '16px', 
+                  margin: 0,
+                  fontWeight: 500
+                }}>
+                  आपके खोज मापदंडों से मेल खाने वाले कोई बच्चे नहीं मिले।
+                </p>
               </div>
             )}
           </div>
           
           {/* Pagination */}
-          <div className="pagination">
-            <button className="page-btn">1</button>
-            <button className="page-btn">2</button>
-            <button className="page-btn">3</button>
-            <button className="page-btn">4</button>
-            <button className="page-btn">5</button>
-            <span>...</span>
-            <button className="page-btn">»</button>
-            <button className="page-btn">»</button>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '24px', padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
+            <button style={{ background: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: 'white' }}>1</button>
+            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>2</button>
+            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>3</button>
+            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>4</button>
+            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>5</button>
+            <span style={{ color: '#6b7280', fontSize: '16px', margin: '0 8px' }}>...</span>
+            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>»</button>
+            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>»</button>
           </div>
         </div>
 
         {/* Modal */}
         {showModal && selectedStudent && (
-          <div className="modal-overlay" onClick={closeModal}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={closeModal}>×</button>
-              <h2>Student Details</h2>
-              <div className="student-details">
-                <div className="detail-group">
-                  <label>ID:</label>
-                  <span>{selectedStudent.id}</span>
+          <div style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            background: 'rgba(0, 0, 0, 0.6)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            zIndex: 1000,
+            backdropFilter: 'blur(4px)'
+          }} onClick={closeModal}>
+            <div style={{ 
+              background: 'white', 
+              borderRadius: '20px', 
+              maxWidth: '700px', 
+              width: '90%', 
+              maxHeight: '90vh', 
+              overflow: 'hidden', 
+              position: 'relative',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+              border: '2px solid #e2e8f0'
+            }} onClick={(e) => e.stopPropagation()}>
+              
+              {/* Modal Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #1e293b, #334155)',
+                color: 'white',
+                padding: '24px 32px',
+                position: 'relative'
+              }}>
+                <button 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '20px', 
+                    right: '20px', 
+                    background: 'rgba(255, 255, 255, 0.2)', 
+                    border: 'none', 
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    fontSize: '20px', 
+                    cursor: 'pointer', 
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease'
+                  }} 
+                  onClick={closeModal}
+                  onMouseOver={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.3)'; }}
+                  onMouseOut={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
+                >
+                  ×
+                </button>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '28px'
+                  }}>
+                    👶
+                  </div>
+                  <div>
+                    <h2 style={{ 
+                      fontSize: '24px', 
+                      fontWeight: 700, 
+                      margin: '0 0 4px 0'
+                    }}>
+                      बच्चे का संपूर्ण विवरण
+                    </h2>
+                    <p style={{ 
+                      fontSize: '14px', 
+                      opacity: 0.9, 
+                      margin: 0
+                    }}>
+                      Student ID: {selectedStudent.s_id} | HarGhar Munga Database
+                    </p>
+                  </div>
                 </div>
-                <div className="detail-group">
-                  <label>Name:</label>
-                  <span>{selectedStudent.s_name}</span>
+              </div>
+
+              {/* Modal Content */}
+              <div style={{ 
+                maxHeight: '500px', 
+                overflowY: 'auto', 
+                padding: '0'
+              }}>
+                <div style={{ padding: '32px' }}>
+                  
+                  {/* Personal Information */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: 700, 
+                      color: '#1e293b', 
+                      margin: '0 0 20px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '20px' }}>👤</span> व्यक्तिगत जानकारी
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>नाम</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>{selectedStudent.s_name}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>मोबाइल नंबर</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>📱 {selectedStudent.s_mobile}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>पिता का नाम</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>👨 {selectedStudent.s_father}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>माता का नाम</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>👩 {selectedStudent.s_mother}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>जन्म तिथि</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>🎂 {new Date(selectedStudent.s_dob).toLocaleDateString('hi-IN')}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>उम्र</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>⏰ {selectedStudent.s_age} साल</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Physical Details */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: 700, 
+                      color: '#1e293b', 
+                      margin: '0 0 20px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '20px' }}>📏</span> शारीरिक विवरण
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                      <div style={{ 
+                        background: '#f0f9ff', 
+                        padding: '20px', 
+                        borderRadius: '12px',
+                        border: '2px solid #0ea5e9',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>📏</div>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#0369a1', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>कद</label>
+                        <span style={{ 
+                          color: '#0c4a6e', 
+                          fontSize: '18px',
+                          fontWeight: 700
+                        }}>{selectedStudent.s_height}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f0fdf4', 
+                        padding: '20px', 
+                        borderRadius: '12px',
+                        border: '2px solid #10b981',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>⚖️</div>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#059669', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>वजन</label>
+                        <span style={{ 
+                          color: '#064e3b', 
+                          fontSize: '18px',
+                          fontWeight: 700
+                        }}>{selectedStudent.s_weight}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: getHealthStatusBg(selectedStudent.s_healtha_status), 
+                        padding: '20px', 
+                        borderRadius: '12px',
+                        border: `2px solid ${getHealthStatusColor(selectedStudent.s_healtha_status)}`,
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>💚</div>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: getHealthStatusColor(selectedStudent.s_healtha_status), 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>स्वास्थ्य</label>
+                        <span style={{ 
+                          color: getHealthStatusColor(selectedStudent.s_healtha_status), 
+                          fontSize: '18px',
+                          fontWeight: 700
+                        }}>{selectedStudent.s_healtha_status}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Program & Location Details */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: 700, 
+                      color: '#1e293b', 
+                      margin: '0 0 20px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '20px' }}>🏛️</span> कार्यक्रम एवं स्थान
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div style={{ 
+                        background: '#eff6ff', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #bfdbfe'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#1d4ed8', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>परियोजना</label>
+                        <span style={{ 
+                          color: '#1e40af', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>{selectedStudent.pariyojna_name}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f0fdf4', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #bbf7d0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#15803d', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>सेक्टर</label>
+                        <span style={{ 
+                          color: '#166534', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>{selectedStudent.sector_name}</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0',
+                        gridColumn: '1 / -1'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>केंद्र</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>🏥 {selectedStudent.kendra_name} (ID: {selectedStudent.sk_id})</span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0',
+                        gridColumn: '1 / -1'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>पूरा पता</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600
+                        }}>📍 {selectedStudent.s_address}</span>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
-                <div className="detail-group">
-                  <label>Mobile:</label>
-                  <span>{selectedStudent.s_mobile}</span>
-                </div>
-                <div className="detail-group">
-                  <label>Father's Name:</label>
-                  <span>{selectedStudent.s_father}</span>
-                </div>
-                <div className="detail-group">
-                  <label>Mother's Name:</label>
-                  <span>{selectedStudent.s_mother}</span>
-                </div>
-                <div className="detail-group">
-                  <label>Gender:</label>
-                  <span>{selectedStudent.s_gender}</span>
-                </div>
-                <div className="detail-group">
-                  <label>Date of Birth:</label>
-                  <span>{selectedStudent.s_dob}</span>
-                </div>
-                <div className="detail-group">
-                  <label>Health Status:</label>
-                  <span className="health-badge healthy">
-                    {selectedStudent.s_health_status}
-                  </span>
-                </div>
-                <div className="detail-group">
-                  <label>Vaccination Status:</label>
-                  <span className="vaccination-badge complete">
-                    {selectedStudent.s_vaccination}
-                  </span>
-                </div>
-                <div className="detail-group">
-                  <label>Hospital/Aanganwadi:</label>
-                  <span>{selectedStudent.aanganwadi}</span>
-                </div>
-                <div className="detail-group">
-                  <label>District:</label>
-                  <span>{selectedStudent.district}</span>
-                </div>
-                <div className="detail-group">
-                  <label>Village:</label>
-                  <span>{selectedStudent.village}</span>
-                </div>
+              </div>
+              
+              {/* Modal Footer */}
+              <div style={{
+                background: '#f8fafc',
+                padding: '20px 32px',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '12px'
+              }}>
+                <button 
+                  onClick={closeModal}
+                  style={{
+                    background: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => { e.target.style.background = '#4b5563'; }}
+                  onMouseOut={(e) => { e.target.style.background = '#6b7280'; }}
+                >
+                  बंद करें
+                </button>
+                <button 
+                  style={{
+                    background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.4)'; }}
+                  onMouseOut={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'none'; }}
+                >
+                  संपादित करें
+                </button>
               </div>
             </div>
           </div>
