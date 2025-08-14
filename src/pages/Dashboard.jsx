@@ -65,7 +65,7 @@ const Dashboard = ({ onLogout }) => {
       <main style={{ 
         flex: 1, 
         marginLeft: '260px', 
-        padding: '100px 40px 60px 40px', 
+        padding: '120px 40px 60px 40px', 
         minHeight: '100vh', 
         width: 'calc(100vw - 260px)', 
         maxWidth: 'calc(100vw - 260px)', 
@@ -135,85 +135,11 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </div>
 
-        {/* Government Welcome Card */}
-        <div style={{
-          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-          borderRadius: '16px',
-          padding: '32px',
-          marginBottom: '32px',
-          color: 'white',
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: '0 10px 40px rgba(30, 41, 59, 0.3)',
-          border: '2px solid #0ea5e9'
-        }}>
-          <div style={{ position: 'relative', zIndex: 2 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '28px'
-              }}>
-                🏛️
-              </div>
-              <div>
-                <h2 style={{ 
-                  fontSize: '24px', 
-                  fontWeight: 700, 
-                  marginBottom: '4px', 
-                  margin: '0 0 4px 0' 
-                }}>
-                  Government Administrative Dashboard
-                </h2>
-                <p style={{ 
-                  fontSize: '16px', 
-                  opacity: 0.9, 
-                  margin: 0,
-                  lineHeight: 1.5
-                }}>
-                  Real-time monitoring of HarGhar Munga Project across Chhattisgarh
-                </p>
-              </div>
-            </div>
-            <div style={{ 
-              background: 'rgba(255, 255, 255, 0.1)', 
-              padding: '16px', 
-              borderRadius: '8px',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <p style={{ 
-                fontSize: '14px', 
-                margin: 0, 
-                fontWeight: 500,
-                opacity: 0.9
-              }}>
-                📋 Comprehensive nutrition program management | 🏥 Health monitoring system | 📊 Real-time analytics
-              </p>
-            </div>
-          </div>
-          {/* Background decoration */}
-          <div style={{
-            position: 'absolute',
-            top: '-40px',
-            right: '-40px',
-            width: '200px',
-            height: '200px',
-            background: 'rgba(14, 165, 233, 0.1)',
-            borderRadius: '50%',
-            zIndex: 1
-          }}></div>
-        </div>
-
         {/* Info Boxes Grid */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: '32px', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+          gap: '24px', 
           marginBottom: '48px', 
           width: '100%' 
         }}>

@@ -310,7 +310,7 @@ const StudentStats = ({ onLogout }) => {
       <main style={{ 
         flex: 1, 
         marginLeft: '260px', 
-        padding: '100px 32px 32px 32px',
+        padding: '120px 32px 32px 32px',
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
       }}>
@@ -577,7 +577,7 @@ const StudentStats = ({ onLogout }) => {
         </div>
 
         {/* Info Boxes */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginBottom: '32px', width: '100%' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '32px', width: '100%' }}>
           {infoBoxData.map((item, index) => (
             <InfoBox
               key={index}

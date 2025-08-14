@@ -52,9 +52,9 @@ const InfoBox = ({ title, count, icon, color }) => {
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '20px',
-        padding: '32px',
-        boxShadow: `0 15px 40px ${colorStyles.shadow}`,
+        borderRadius: '16px',
+        padding: '20px',
+        boxShadow: `0 10px 30px ${colorStyles.shadow}`,
         border: '1px solid rgba(255, 255, 255, 0.2)',
         transition: 'all 0.3s ease',
         position: 'relative',
@@ -63,12 +63,12 @@ const InfoBox = ({ title, count, icon, color }) => {
         animation: 'fadeInUp 0.8s ease-out'
       }}
       onMouseOver={(e) => {
-        e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
-        e.currentTarget.style.boxShadow = `0 25px 60px ${colorStyles.shadow}`;
+        e.currentTarget.style.transform = 'translateY(-6px) scale(1.02)';
+        e.currentTarget.style.boxShadow = `0 20px 50px ${colorStyles.shadow}`;
       }}
       onMouseOut={(e) => {
         e.currentTarget.style.transform = 'translateY(0) scale(1)';
-        e.currentTarget.style.boxShadow = `0 15px 40px ${colorStyles.shadow}`;
+        e.currentTarget.style.boxShadow = `0 10px 30px ${colorStyles.shadow}`;
       }}
     >
       {/* Background decoration */}
@@ -77,12 +77,12 @@ const InfoBox = ({ title, count, icon, color }) => {
           position: 'absolute',
           top: 0,
           right: 0,
-          width: '100px',
-          height: '100px',
+          width: '70px',
+          height: '70px',
           background: colorStyles.gradient,
           borderRadius: '50%',
           opacity: 0.1,
-          transform: 'translate(30px, -30px)'
+          transform: 'translate(25px, -25px)'
         }}
       />
       
@@ -103,14 +103,14 @@ const InfoBox = ({ title, count, icon, color }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '64px',
-        height: '64px',
+        width: '48px',
+        height: '48px',
         background: colorStyles.gradient,
-        borderRadius: '16px',
-        marginBottom: '20px',
-        fontSize: '28px',
+        borderRadius: '12px',
+        marginBottom: '16px',
+        fontSize: '20px',
         color: 'white',
-        boxShadow: `0 8px 25px ${colorStyles.shadow}`,
+        boxShadow: `0 6px 20px ${colorStyles.shadow}`,
         position: 'relative',
         zIndex: 2
       }}>
@@ -120,10 +120,10 @@ const InfoBox = ({ title, count, icon, color }) => {
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 2 }}>
         <h3 style={{
-          fontSize: '16px',
+          fontSize: '14px',
           fontWeight: 600,
           color: '#64748b',
-          marginBottom: '8px',
+          marginBottom: '6px',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
           lineHeight: 1.4
@@ -132,10 +132,10 @@ const InfoBox = ({ title, count, icon, color }) => {
         </h3>
         
         <div style={{
-          fontSize: '36px',
+          fontSize: '28px',
           fontWeight: 800,
           color: '#1e293b',
-          marginBottom: '16px',
+          marginBottom: '12px',
           lineHeight: 1.1,
           background: colorStyles.gradient,
           WebkitBackgroundClip: 'text',
@@ -149,10 +149,10 @@ const InfoBox = ({ title, count, icon, color }) => {
         {/* Progress bar */}
         <div style={{
           width: '100%',
-          height: '4px',
+          height: '3px',
           background: 'rgba(0, 0, 0, 0.1)',
           borderRadius: '2px',
-          marginBottom: '16px',
+          marginBottom: '12px',
           overflow: 'hidden'
         }}>
           <div style={{
@@ -171,7 +171,7 @@ const InfoBox = ({ title, count, icon, color }) => {
           justifyContent: 'space-between'
         }}>
           <span style={{
-            fontSize: '12px',
+            fontSize: '11px',
             color: '#64748b',
             fontWeight: 500
           }}>
@@ -180,17 +180,17 @@ const InfoBox = ({ title, count, icon, color }) => {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}>
             <div style={{
-              width: '6px',
-              height: '6px',
+              width: '5px',
+              height: '5px',
               background: '#22c55e',
               borderRadius: '50%',
               animation: 'pulse 2s infinite'
             }}></div>
             <span style={{
-              fontSize: '12px',
+              fontSize: '11px',
               color: '#22c55e',
               fontWeight: 600
             }}>
