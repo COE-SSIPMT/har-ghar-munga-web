@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
+import { Search, Plus, Eye, Edit, Building2, MapPin, User, Phone, Calendar, Check, AlertCircle, X } from 'lucide-react';
 // Styles merged from AanganwadiStats.css
 
 const AanganwadiStats = ({ onLogout }) => {
@@ -249,7 +250,7 @@ const AanganwadiStats = ({ onLogout }) => {
     <div style={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
       fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
     }}>
       <Sidebar onLogout={onLogout} />
@@ -259,7 +260,7 @@ const AanganwadiStats = ({ onLogout }) => {
         marginLeft: '260px', 
         padding: '120px 32px 32px 32px',
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)'
       }}>
         {/* Government Header */}
         <div style={{ 
@@ -267,7 +268,7 @@ const AanganwadiStats = ({ onLogout }) => {
           top: 0, 
           left: '260px', 
           right: 0, 
-          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+          background: 'linear-gradient(135deg, #166534 0%, #15803d 100%)',
           padding: '20px 32px',
           borderBottom: '3px solid #0ea5e9',
           zIndex: 50,
@@ -336,7 +337,7 @@ const AanganwadiStats = ({ onLogout }) => {
           <InfoBox 
             title="सक्रिय छात्र" 
             count="6,892" 
-            icon="📊" 
+            icon={<BarChart3 size={24} />} 
             color="light-brown"
           />
         </div>
@@ -360,14 +361,14 @@ const AanganwadiStats = ({ onLogout }) => {
               <div style={{
                 width: '40px',
                 height: '40px',
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '20px'
               }}>
-                🔍
+                <Search size={20} color="white" />
               </div>
               <h3 style={{ 
                 fontSize: '20px', 
@@ -381,7 +382,7 @@ const AanganwadiStats = ({ onLogout }) => {
             <button 
               style={{ 
                 padding: '14px 28px', 
-                background: 'linear-gradient(135deg, #059669, #10b981)', 
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
                 color: '#ffffff', 
                 border: 'none', 
                 borderRadius: '12px', 
@@ -403,7 +404,10 @@ const AanganwadiStats = ({ onLogout }) => {
                 e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)';
               }}
             >
-              + नया केंद्र जोड़ें
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Plus size={16} />
+                नया केंद्र जोड़ें
+              </div>
             </button>
           </div>
           
@@ -412,7 +416,7 @@ const AanganwadiStats = ({ onLogout }) => {
             <div style={{ position: 'relative', width: '100%' }}>
               <input
                 type="text"
-                placeholder="🔍 केंद्र का नाम, पता, परियोजना, सेक्टर या लॉगिन ID से खोजें..."
+                placeholder="केंद्र का नाम, पता, परियोजना, सेक्टर या लॉगिन ID से खोजें..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 style={{ 
@@ -463,7 +467,7 @@ const AanganwadiStats = ({ onLogout }) => {
                   onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
                   onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
                 >
-                  ×
+                  <X size={18} color="white" />
                 </button>
               )}
             </div>
@@ -618,7 +622,7 @@ const AanganwadiStats = ({ onLogout }) => {
                     </h4>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <span style={{ 
-                        background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', 
+                        background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
                         color: 'white', 
                         padding: '4px 12px', 
                         borderRadius: '12px', 
@@ -723,9 +727,11 @@ const AanganwadiStats = ({ onLogout }) => {
               }}>
                 <div style={{
                   fontSize: '48px',
-                  marginBottom: '16px'
+                  marginBottom: '16px',
+                  display: 'flex',
+                  justifyContent: 'center'
                 }}>
-                  🔍
+                  <Search size={48} color="#64748b" />
                 </div>
                 <h3 style={{ 
                   color: '#1e293b', 

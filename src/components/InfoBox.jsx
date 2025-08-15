@@ -29,10 +29,10 @@ const InfoBox = ({ title, count, icon, color }) => {
         light: '#fef3c7'
       },
       blue: {
-        primary: '#0284c7',
-        gradient: 'linear-gradient(135deg, #0284c7, #0ea5e9)',
-        shadow: 'rgba(2, 132, 199, 0.25)',
-        light: '#dbeafe'
+        primary: '#22c55e',
+        gradient: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        shadow: 'rgba(34, 197, 94, 0.25)',
+        light: '#dcfce7'
       },
       red: {
         primary: '#dc2626',

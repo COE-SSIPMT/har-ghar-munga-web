@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { BarChart3, GraduationCap, Building2, LogOut, Sprout } from 'lucide-react';
 // Styles merged from Sidebar.css
 
 const Sidebar = ({ onLogout }) => {
@@ -10,9 +11,9 @@ const Sidebar = ({ onLogout }) => {
   };
 
   const menuItems = [
-    { path: '/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/student-stats', icon: '👨‍🎓', label: 'Student Stats' },
-    { path: '/aanganwadi-stats', icon: '🏢', label: 'Aanganwadi Stats' }
+    { path: '/dashboard', icon: BarChart3, label: 'Dashboard' },
+    { path: '/student-stats', icon: GraduationCap, label: 'Student Stats' },
+    { path: '/aanganwadi-stats', icon: Building2, label: 'Aanganwadi Stats' }
   ];
 
   return (
@@ -20,7 +21,7 @@ const Sidebar = ({ onLogout }) => {
       width: '260px', 
       minHeight: '100vh', 
       height: '100vh', 
-      background: 'linear-gradient(180deg, #1e293b 0%, #334155 50%, #475569 100%)',
+      background: 'linear-gradient(180deg, #064e3b 0%, #065f46 50%, #047857 100%)',
       color: '#fff', 
       position: 'fixed', 
       left: 0, 
@@ -36,7 +37,7 @@ const Sidebar = ({ onLogout }) => {
       <div style={{ 
         padding: '32px 24px', 
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+        background: 'linear-gradient(135deg, #065f46, #047857)',
         position: 'relative',
         overflow: 'hidden'
       }}>
@@ -68,7 +69,7 @@ const Sidebar = ({ onLogout }) => {
             justifyContent: 'center',
             boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)'
           }}>
-            🌱
+            <Sprout size={32} color="white" />
           </div>
           <div>
             <div style={{ 
@@ -149,9 +150,12 @@ const Sidebar = ({ onLogout }) => {
               fontSize: '20px', 
               width: '28px', 
               textAlign: 'center',
-              filter: isActive(item.path) ? 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' : 'none'
+              filter: isActive(item.path) ? 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              {item.icon}
+              <item.icon size={20} />
             </span>
             <span style={{ fontWeight: 'inherit' }}>
               {item.label}
@@ -175,7 +179,7 @@ const Sidebar = ({ onLogout }) => {
           <div style={{
             width: '40px',
             height: '40px',
-            background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
             borderRadius: '10px',
             display: 'flex',
             alignItems: 'center',
@@ -230,7 +234,7 @@ const Sidebar = ({ onLogout }) => {
             e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.3)';
           }}
         >
-          <span style={{ fontSize: '18px' }}>🚪</span>
+          <LogOut size={18} />
           Logout
         </button>
       </div>

@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
 import CustomPieChart from '../charts/PieChart';
 import CustomColumnChart from '../charts/ColumnChart';
+import { Users, Building2, Camera, Sprout, BarChart3, TrendingUp } from 'lucide-react';
 // Styles merged from Dashboard.css and Charts.css
 
 const Dashboard = ({ onLogout }) => {
@@ -11,25 +12,25 @@ const Dashboard = ({ onLogout }) => {
     {
       title: 'Total Students',
       count: '1,247',
-      icon: '👥',
+      icon: <Users size={24} />,
       color: 'green'
     },
     {
       title: 'Total Aanganwadi',
       count: '156',
-      icon: '🏢',
+      icon: <Building2 size={24} />,
       color: 'brown'
     },
     {
       title: 'Photos by Students',
       count: '3,892',
-      icon: '📸',
+      icon: <Camera size={24} />,
       color: 'light-green'
     },
     {
       title: 'Photos by Aanganwadi',
       count: '2,154',
-      icon: '🌱',
+      icon: <Sprout size={24} />,
       color: 'light-brown'
     }
   ];
@@ -55,7 +56,7 @@ const Dashboard = ({ onLogout }) => {
       display: 'flex', 
       minHeight: '100vh', 
       width: '100vw', 
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%, #f8fafc 100%)',
+      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 25%, #bbf7d0 50%, #dcfce7 75%, #f0fdf4 100%)',
       backgroundSize: '400% 400%',
       animation: 'gradientShift 20s ease infinite',
       overflowX: 'hidden'
@@ -80,8 +81,8 @@ const Dashboard = ({ onLogout }) => {
           left: '260px', 
           right: 0, 
           padding: '24px 40px 16px 40px', 
-          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-          borderBottom: '3px solid #0ea5e9', 
+          background: 'linear-gradient(135deg, #166534 0%, #15803d 100%)',
+          borderBottom: '3px solid #22c55e', 
           zIndex: 100, 
           minHeight: '88px', 
           display: 'flex', 
@@ -115,13 +116,13 @@ const Dashboard = ({ onLogout }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              background: 'rgba(14, 165, 233, 0.2)',
+              background: 'rgba(34, 197, 94, 0.2)',
               padding: '12px 20px',
               borderRadius: '8px',
-              color: '#0ea5e9',
+              color: '#22c55e',
               fontSize: '14px',
               fontWeight: 600,
-              border: '1px solid rgba(14, 165, 233, 0.3)'
+              border: '1px solid rgba(34, 197, 94, 0.3)'
             }}>
               <div style={{
                 width: '8px',
@@ -173,7 +174,7 @@ const Dashboard = ({ onLogout }) => {
           onMouseOver={(e) => {
             e.currentTarget.style.transform = 'translateY(-4px)';
             e.currentTarget.style.boxShadow = '0 15px 50px rgba(0, 0, 0, 0.12)';
-            e.currentTarget.style.borderColor = '#0ea5e9';
+            e.currentTarget.style.borderColor = '#22c55e';
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
@@ -189,14 +190,14 @@ const Dashboard = ({ onLogout }) => {
               <div style={{
                 width: '40px',
                 height: '40px',
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '20px'
               }}>
-                📊
+                <BarChart3 size={20} color="white" />
               </div>
               <h3 style={{
                 fontSize: '18px',
@@ -223,7 +224,7 @@ const Dashboard = ({ onLogout }) => {
           onMouseOver={(e) => {
             e.currentTarget.style.transform = 'translateY(-4px)';
             e.currentTarget.style.boxShadow = '0 15px 50px rgba(0, 0, 0, 0.12)';
-            e.currentTarget.style.borderColor = '#0ea5e9';
+            e.currentTarget.style.borderColor = '#22c55e';
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
@@ -239,14 +240,14 @@ const Dashboard = ({ onLogout }) => {
               <div style={{
                 width: '40px',
                 height: '40px',
-                background: 'linear-gradient(135deg, #059669, #10b981)',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '20px'
               }}>
-                📈
+                <TrendingUp size={20} color="white" />
               </div>
               <h3 style={{
                 fontSize: '18px',

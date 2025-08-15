@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
+import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home } from 'lucide-react';
 // Styles merged from StudentStats.css
 
 const StudentStats = ({ onLogout }) => {
@@ -245,25 +246,25 @@ const StudentStats = ({ onLogout }) => {
     {
       title: 'कुल बच्चे',
       count: filteredStudents.length.toString(),
-      icon: '�',
+      icon: <User size={24} />,
       color: 'blue'
     },
     {
       title: 'स्वस्थ बच्चे',
       count: filteredStudents.filter(s => s.s_healtha_status === 'स्वस्थ').length.toString(),
-      icon: '💚',
+      icon: <Activity size={24} />,
       color: 'green'
     },
     {
       title: 'कमज़ोर बच्चे',
       count: filteredStudents.filter(s => s.s_healtha_status === 'कमज़ोर').length.toString(),
-      icon: '⚠️',
+      icon: <AlertTriangle size={24} />,
       color: 'brown'
     },
     {
       title: 'सक्रिय रिकॉर्ड',
       count: filteredStudents.length.toString(),
-      icon: '�',
+      icon: <FileText size={24} />,
       color: 'light-brown'
     }
   ];
@@ -302,7 +303,7 @@ const StudentStats = ({ onLogout }) => {
     <div style={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
       fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
     }}>
       <Sidebar onLogout={onLogout} />
@@ -312,7 +313,7 @@ const StudentStats = ({ onLogout }) => {
         marginLeft: '260px', 
         padding: '120px 32px 32px 32px',
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)'
       }}>
         {/* Government Header */}
         <div style={{ 
@@ -320,9 +321,9 @@ const StudentStats = ({ onLogout }) => {
           top: 0, 
           left: '260px', 
           right: 0, 
-          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+          background: 'linear-gradient(135deg, #166534 0%, #15803d 100%)',
           padding: '20px 32px',
-          borderBottom: '3px solid #0ea5e9',
+          borderBottom: '3px solid #22c55e',
           zIndex: 50,
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
         }}>
@@ -367,14 +368,14 @@ const StudentStats = ({ onLogout }) => {
             <div style={{
               width: '40px',
               height: '40px',
-              background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '20px'
             }}>
-              🔍
+              <Search size={20} color="white" />
             </div>
             <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b', margin: 0 }}>खोज और फ़िल्टर</h3>
           </div>
@@ -384,7 +385,7 @@ const StudentStats = ({ onLogout }) => {
             <div style={{ position: 'relative', width: '100%' }}>
               <input
                 type="text"
-                placeholder="🔍 बच्चे का नाम, माता-पिता का नाम, पता, स्वास्थ्य स्थिति से खोजें..."
+                placeholder="बच्चे का नाम, माता-पिता का नाम, पता, स्वास्थ्य स्थिति से खोजें..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 style={{ 
@@ -603,7 +604,7 @@ const StudentStats = ({ onLogout }) => {
                 justifyContent: 'center',
                 fontSize: '20px'
               }}>
-                📋
+                <FileText size={20} color="white" />
               </div>
               <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b', margin: 0 }}>बच्चों की विस्तृत सूची</h3>
             </div>
@@ -632,7 +633,7 @@ const StudentStats = ({ onLogout }) => {
           }}>
             {filteredStudents.length > 0 ? (
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                <thead style={{ background: 'linear-gradient(135deg, #1e293b, #334155)', color: 'white' }}>
+                <thead style={{ background: 'linear-gradient(135deg, #166534, #15803d)', color: 'white' }}>
                   <tr>
                     <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>ID</th>
                     <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>बच्चे का नाम</th>
@@ -663,14 +664,21 @@ const StudentStats = ({ onLogout }) => {
                         <div>
                           <strong style={{ color: '#1e293b', fontWeight: 700, fontSize: '15px', display: 'block', marginBottom: '4px' }}>{student.s_name}</strong>
                           <span style={{ color: '#64748b', fontSize: '13px', background: '#f1f5f9', padding: '2px 8px', borderRadius: '12px' }}>
-                            📱 {student.s_mobile}
+                            <Phone size={14} style={{ marginRight: '4px' }} />
+                            {student.s_mobile}
                           </span>
                         </div>
                       </td>
                       <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
                         <div style={{ lineHeight: '1.4' }}>
-                          <div style={{ color: '#1e293b', fontWeight: 600, marginBottom: '2px' }}>👨 {student.s_father}</div>
-                          <div style={{ color: '#1e293b', fontWeight: 600 }}>👩 {student.s_mother}</div>
+                          <div style={{ color: '#1e293b', fontWeight: 600, marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <User size={14} />
+                            {student.s_father}
+                          </div>
+                          <div style={{ color: '#1e293b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <User size={14} />
+                            {student.s_mother}
+                          </div>
                         </div>
                       </td>
                       <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
@@ -682,9 +690,14 @@ const StudentStats = ({ onLogout }) => {
                             borderRadius: '8px', 
                             fontSize: '12px', 
                             fontWeight: 600,
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
                           }}>
-                            📏 {student.s_height}
+                            <Ruler size={12} />
+                            {student.s_height}
                           </span>
                           <span style={{ 
                             background: '#f0fdf4', 
@@ -695,7 +708,8 @@ const StudentStats = ({ onLogout }) => {
                             fontWeight: 600,
                             textAlign: 'center'
                           }}>
-                            ⚖️ {student.s_weight}
+                            <Weight size={14} style={{ marginRight: '4px' }} />
+                            {student.s_weight}
                           </span>
                           <span style={{ 
                             background: '#fef7ed', 
@@ -704,9 +718,14 @@ const StudentStats = ({ onLogout }) => {
                             borderRadius: '8px', 
                             fontSize: '12px', 
                             fontWeight: 600,
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
                           }}>
-                            🎂 {student.s_age} साल
+                            <Calendar size={12} />
+                            {student.s_age} साल
                           </span>
                         </div>
                       </td>
@@ -771,9 +790,13 @@ const StudentStats = ({ onLogout }) => {
                           overflow: 'hidden', 
                           textOverflow: 'ellipsis', 
                           whiteSpace: 'nowrap',
-                          fontWeight: 500
+                          fontWeight: 500,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
                         }} title={student.s_address}>
-                          📍 {student.s_address}
+                          <MapPin size={14} />
+                          {student.s_address}
                         </div>
                       </td>
                       <td style={{ padding: '16px', verticalAlign: 'middle', fontSize: '14px' }}>
@@ -782,7 +805,7 @@ const StudentStats = ({ onLogout }) => {
                             onClick={() => openModal(student)}
                             title="विवरण देखें"
                             style={{ 
-                              background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', 
+                              background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
                               border: 'none', 
                               borderRadius: '8px', 
                               width: '36px', 
@@ -797,14 +820,14 @@ const StudentStats = ({ onLogout }) => {
                             }}
                             onMouseOver={(e) => { 
                               e.target.style.transform = 'translateY(-2px) scale(1.1)'; 
-                              e.target.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.4)';
+                              e.target.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.4)';
                             }}
                             onMouseOut={(e) => { 
                               e.target.style.transform = 'translateY(0) scale(1)'; 
                               e.target.style.boxShadow = 'none';
                             }}
                           >
-                            👁️
+                            <Eye size={16} color="white" />
                           </button>
                           <button 
                             title="संपादित करें"
@@ -831,7 +854,7 @@ const StudentStats = ({ onLogout }) => {
                               e.target.style.boxShadow = 'none';
                             }}
                           >
-                            ✏️
+                            <Edit size={16} color="white" />
                           </button>
                         </div>
                       </td>
@@ -847,9 +870,11 @@ const StudentStats = ({ onLogout }) => {
               }}>
                 <div style={{
                   fontSize: '48px',
-                  marginBottom: '16px'
+                  marginBottom: '16px',
+                  display: 'flex',
+                  justifyContent: 'center'
                 }}>
-                  🔍
+                  <Search size={48} color="#64748b" />
                 </div>
                 <h3 style={{ 
                   color: '#1e293b', 
@@ -913,7 +938,7 @@ const StudentStats = ({ onLogout }) => {
               
               {/* Modal Header */}
               <div style={{
-                background: 'linear-gradient(135deg, #1e293b, #334155)',
+                background: 'linear-gradient(135deg, #166534, #15803d)',
                 color: 'white',
                 padding: '24px 32px',
                 position: 'relative'
@@ -940,21 +965,21 @@ const StudentStats = ({ onLogout }) => {
                   onMouseOver={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.3)'; }}
                   onMouseOut={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
                 >
-                  ×
+                  <X size={20} color="white" />
                 </button>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{
                     width: '60px',
                     height: '60px',
-                    background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                     borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '28px'
                   }}>
-                    👶
+                    <Baby size={28} color="white" />
                   </div>
                   <div>
                     <h2 style={{ 
@@ -994,7 +1019,8 @@ const StudentStats = ({ onLogout }) => {
                       alignItems: 'center',
                       gap: '8px'
                     }}>
-                      <span style={{ fontSize: '20px' }}>👤</span> व्यक्तिगत जानकारी
+                      <User size={20} />
+                      व्यक्तिगत जानकारी
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div style={{ 
@@ -1038,7 +1064,10 @@ const StudentStats = ({ onLogout }) => {
                           color: '#1e293b', 
                           fontSize: '16px',
                           fontWeight: 600
-                        }}>📱 {selectedStudent.s_mobile}</span>
+                        }}>
+                          <Phone size={14} style={{ marginRight: '4px' }} />
+                          {selectedStudent.s_mobile}
+                        </span>
                       </div>
                       
                       <div style={{ 
@@ -1060,7 +1089,10 @@ const StudentStats = ({ onLogout }) => {
                           color: '#1e293b', 
                           fontSize: '16px',
                           fontWeight: 600
-                        }}>👨 {selectedStudent.s_father}</span>
+                        }}>
+                          <User size={14} style={{ marginRight: '4px' }} />
+                          {selectedStudent.s_father}
+                        </span>
                       </div>
                       
                       <div style={{ 
@@ -1081,8 +1113,14 @@ const StudentStats = ({ onLogout }) => {
                         <span style={{ 
                           color: '#1e293b', 
                           fontSize: '16px',
-                          fontWeight: 600
-                        }}>👩 {selectedStudent.s_mother}</span>
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <User size={14} />
+                          {selectedStudent.s_mother}
+                        </span>
                       </div>
                       
                       <div style={{ 
@@ -1103,8 +1141,14 @@ const StudentStats = ({ onLogout }) => {
                         <span style={{ 
                           color: '#1e293b', 
                           fontSize: '16px',
-                          fontWeight: 600
-                        }}>🎂 {new Date(selectedStudent.s_dob).toLocaleDateString('hi-IN')}</span>
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <Calendar size={14} />
+                          {new Date(selectedStudent.s_dob).toLocaleDateString('hi-IN')}
+                        </span>
                       </div>
                       
                       <div style={{ 
@@ -1125,8 +1169,14 @@ const StudentStats = ({ onLogout }) => {
                         <span style={{ 
                           color: '#1e293b', 
                           fontSize: '16px',
-                          fontWeight: 600
-                        }}>⏰ {selectedStudent.s_age} साल</span>
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <Calendar size={14} />
+                          {selectedStudent.s_age} साल
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1142,7 +1192,8 @@ const StudentStats = ({ onLogout }) => {
                       alignItems: 'center',
                       gap: '8px'
                     }}>
-                      <span style={{ fontSize: '20px' }}>📏</span> शारीरिक विवरण
+                      <Activity size={20} />
+                      शारीरिक विवरण
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                       <div style={{ 
@@ -1152,7 +1203,9 @@ const StudentStats = ({ onLogout }) => {
                         border: '2px solid #0ea5e9',
                         textAlign: 'center'
                       }}>
-                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>📏</div>
+                        <div style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                          <Ruler size={24} color="#0369a1" />
+                        </div>
                         <label style={{ 
                           fontWeight: 600, 
                           color: '#0369a1', 
@@ -1176,7 +1229,9 @@ const StudentStats = ({ onLogout }) => {
                         border: '2px solid #10b981',
                         textAlign: 'center'
                       }}>
-                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>⚖️</div>
+                        <div style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                          <Weight size={24} color="#059669" />
+                        </div>
                         <label style={{ 
                           fontWeight: 600, 
                           color: '#059669', 
@@ -1200,7 +1255,9 @@ const StudentStats = ({ onLogout }) => {
                         border: `2px solid ${getHealthStatusColor(selectedStudent.s_healtha_status)}`,
                         textAlign: 'center'
                       }}>
-                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>💚</div>
+                        <div style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                          <Activity size={24} color={getHealthStatusColor(selectedStudent.s_healtha_status)} />
+                        </div>
                         <label style={{ 
                           fontWeight: 600, 
                           color: getHealthStatusColor(selectedStudent.s_healtha_status), 
@@ -1230,7 +1287,10 @@ const StudentStats = ({ onLogout }) => {
                       alignItems: 'center',
                       gap: '8px'
                     }}>
-                      <span style={{ fontSize: '20px' }}>🏛️</span> कार्यक्रम एवं स्थान
+                      <span style={{ fontSize: '20px', marginRight: '8px' }}>
+                        <Building size={20} />
+                      </span> 
+                      कार्यक्रम एवं स्थान
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div style={{ 
@@ -1296,8 +1356,14 @@ const StudentStats = ({ onLogout }) => {
                         <span style={{ 
                           color: '#1e293b', 
                           fontSize: '16px',
-                          fontWeight: 600
-                        }}>🏥 {selectedStudent.kendra_name} (ID: {selectedStudent.sk_id})</span>
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <Hospital size={14} />
+                          {selectedStudent.kendra_name} (ID: {selectedStudent.sk_id})
+                        </span>
                       </div>
                       
                       <div style={{ 
@@ -1319,8 +1385,14 @@ const StudentStats = ({ onLogout }) => {
                         <span style={{ 
                           color: '#1e293b', 
                           fontSize: '16px',
-                          fontWeight: 600
-                        }}>📍 {selectedStudent.s_address}</span>
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <MapPin size={14} />
+                          {selectedStudent.s_address}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1357,7 +1429,7 @@ const StudentStats = ({ onLogout }) => {
                 </button>
                 <button 
                   style={{
-                    background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                     color: 'white',
                     border: 'none',
                     padding: '12px 24px',
@@ -1367,7 +1439,7 @@ const StudentStats = ({ onLogout }) => {
                     cursor: 'pointer',
                     transition: 'all 0.3s ease'
                   }}
-                  onMouseOver={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.4)'; }}
+                  onMouseOver={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.4)'; }}
                   onMouseOut={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'none'; }}
                 >
                   संपादित करें

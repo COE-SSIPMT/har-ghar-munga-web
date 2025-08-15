@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Lock, Eye, EyeOff, Sprout } from 'lucide-react';
 import logoImage from '/images/logo.jpg';
 // Styles merged from Login.css
 
@@ -35,7 +36,7 @@ const Login = ({ onLogin }) => {
       justifyContent: 'center', 
       position: 'relative', 
       overflow: 'hidden', 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #667eea 50%, #f093fb 75%, #f5576c 100%)',
+      background: 'linear-gradient(135deg, #065f46 0%, #047857 25%, #059669 50%, #10b981 75%, #34d399 100%)',
       backgroundSize: '400% 400%',
       animation: 'gradientShift 15s ease infinite'
     }}>
@@ -75,7 +76,7 @@ const Login = ({ onLogin }) => {
         {/* Left Section - Logo and Website Name */}
         <div style={{
           flex: '1',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -125,7 +126,13 @@ const Login = ({ onLogin }) => {
                   e.target.onerror = () => {
                     console.log('PNG version also failed, using fallback');
                     e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML = '<span style="font-size: 50px; color: white;">🌱</span>';
+                    e.target.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; font-size: 50px; color: white;"><span id="sprout-icon"></span></div>';
+                    // Add Sprout icon
+                    const sproutContainer = document.getElementById('sprout-icon');
+                    if (sproutContainer) {
+                      // This will render as a Lucide icon
+                      sproutContainer.innerHTML = '<svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.7 4.3-1.4 1--.6 1.7-1.5 2.1-2.6-2.6-.1-4.2.5-5.3 1.8z"/></svg>';
+                    }
                   };
                 }}
                 onLoad={() => {
@@ -248,8 +255,8 @@ const Login = ({ onLogin }) => {
                   placeholder="Enter your username"
                   required
                   onFocus={(e) => { 
-                    e.target.style.borderColor = '#667eea'; 
-                    e.target.style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.1)'; 
+                    e.target.style.borderColor = '#22c55e'; 
+                    e.target.style.boxShadow = '0 0 0 4px rgba(34, 197, 94, 0.1)'; 
                     e.target.style.background = '#ffffff';
                     e.target.style.color = '#1e293b';
                   }}
@@ -292,8 +299,8 @@ const Login = ({ onLogin }) => {
                     placeholder="Enter your password"
                     required
                     onFocus={(e) => { 
-                      e.target.style.borderColor = '#667eea'; 
-                      e.target.style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.1)'; 
+                      e.target.style.borderColor = '#22c55e'; 
+                      e.target.style.boxShadow = '0 0 0 4px rgba(34, 197, 94, 0.1)'; 
                       e.target.style.background = '#ffffff';
                       e.target.style.color = '#1e293b';
                     }}
@@ -322,15 +329,15 @@ const Login = ({ onLogin }) => {
                       borderRadius: '6px'
                     }}
                     onMouseOver={e => { 
-                      e.currentTarget.style.color = '#667eea'; 
-                      e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                      e.currentTarget.style.color = '#22c55e'; 
+                      e.currentTarget.style.background = 'rgba(34, 197, 94, 0.1)';
                     }}
                     onMouseOut={e => { 
                       e.currentTarget.style.color = '#64748b'; 
                       e.currentTarget.style.background = 'none';
                     }}
                   >
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -342,23 +349,23 @@ const Login = ({ onLogin }) => {
                   padding: '14px', 
                   fontSize: '16px', 
                   fontWeight: 600, 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                  background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)', 
                   border: 'none', 
                   borderRadius: '12px', 
                   color: '#fff', 
                   cursor: 'pointer', 
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.3)',
+                  boxShadow: '0 6px 20px rgba(6, 95, 70, 0.3)',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
                 onMouseOver={(e) => { 
                   e.target.style.transform = 'translateY(-2px)'; 
-                  e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(6, 95, 70, 0.4)';
                 }}
                 onMouseOut={(e) => { 
                   e.target.style.transform = 'translateY(0)'; 
-                  e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.3)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(6, 95, 70, 0.3)';
                 }}
               >
                 <span style={{ position: 'relative', zIndex: 1 }}>Sign In to Dashboard</span>
@@ -367,8 +374,9 @@ const Login = ({ onLogin }) => {
             
             {/* Additional UI elements */}
             <div style={{ textAlign: 'center', marginTop: '28px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
-                🔒 Secure Admin Access
+              <p style={{ color: '#64748b', fontSize: '14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <Lock size={16} />
+                Secure Admin Access
               </p>
             </div>
           </div>
