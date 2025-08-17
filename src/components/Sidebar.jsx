@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BarChart3, GraduationCap, Building2, LogOut, Sprout } from 'lucide-react';
+import { clearUserSession } from '../utils/cookies';
 import '../styles/unified.css';
 
 const Sidebar = ({ onLogout }) => {
@@ -79,8 +80,17 @@ const Sidebar = ({ onLogout }) => {
       {/* Logout Button */}
       <div className="sidebar-logout">
         <button 
-          onClick={onLogout}
+          onClick={() => {
+            // Clear all session data
+            localStorage.removeItem('adminData');
+            localStorage.removeItem('isLoggedIn');
+            clearUserSession();
+            
+            // Call parent logout function
+            onLogout();
+          }}
           className="logout-button"
+          title="सुरक्षित लॉगआउट - सभी session data clear हो जाएगा"
         >
           <LogOut size={18} />
           Logout

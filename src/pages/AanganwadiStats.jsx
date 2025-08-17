@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Plus, Eye, Edit, Building2, MapPin, User, Phone, Calendar, Check, AlertCircle, X } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Building2, MapPin, User, Phone, Calendar, Check, AlertCircle, X, BarChart3 } from 'lucide-react';
 import '../styles/unified.css';
 
 const AanganwadiStats = ({ onLogout }) => {
@@ -13,7 +13,19 @@ const AanganwadiStats = ({ onLogout }) => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedKendra, setSelectedKendra] = useState(null);
   const [newKendra, setNewKendra] = useState({
+    k_name: '',
+    k_address: '',
+    ks_id: '',
+    kp_id: '',
+    login_id: '',
+    password: ''
+  });
+  const [editKendra, setEditKendra] = useState({
+    k_id: '',
     k_name: '',
     k_address: '',
     ks_id: '',
@@ -152,25 +164,25 @@ const AanganwadiStats = ({ onLogout }) => {
     {
       title: 'कुल केंद्र',
       count: filteredKendras.length.toString(),
-      icon: '�',
+      icon: <Building2 size={24} />,
       color: 'blue'
     },
     {
       title: 'सक्रिय केंद्र',
       count: filteredKendras.filter(k => k.active_students > 0).length.toString(),
-      icon: '✅',
+      icon: <Check size={24} />,
       color: 'green'
     },
     {
       title: 'कुल छात्र',
       count: filteredKendras.reduce((sum, k) => sum + k.total_students, 0).toString(),
-      icon: '�',
+      icon: <User size={24} />,
       color: 'brown'
     },
     {
       title: 'सक्रिय छात्र',
       count: filteredKendras.reduce((sum, k) => sum + k.active_students, 0).toString(),
-      icon: '�',
+      icon: <BarChart3 size={24} />,
       color: 'light-brown'
     }
   ];
@@ -228,6 +240,53 @@ const AanganwadiStats = ({ onLogout }) => {
     });
   };
 
+  const handleEditInputChange = (e) => {
+    setEditKendra({
+      ...editKendra,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleEditKendra = (e) => {
+    e.preventDefault();
+    const updatedKendras = kendras.map(kendra => 
+      kendra.k_id === editKendra.k_id 
+        ? {
+            ...kendra,
+            ...editKendra,
+            ks_id: parseInt(editKendra.ks_id),
+            kp_id: parseInt(editKendra.kp_id),
+            k_updatedAt: new Date().toISOString(),
+            pariyojna_name: getPariyojnaName(parseInt(editKendra.kp_id)),
+            sector_name: getSectorName(parseInt(editKendra.ks_id))
+          }
+        : kendra
+    );
+    setKendras(updatedKendras);
+    setShowEditModal(false);
+    setEditKendra({
+      k_id: '',
+      k_name: '',
+      k_address: '',
+      ks_id: '',
+      kp_id: '',
+      login_id: '',
+      password: ''
+    });
+  };
+
+  const navigateToStudents = (kendra) => {
+    // Navigate to StudentStats with filters
+    const filters = {
+      kendra_id: kendra.k_id,
+      kendra_name: kendra.k_name
+    };
+    // Here you would use router.push or navigate function
+    console.log('Navigating to StudentStats with filters:', filters);
+    // For now, we'll just close the modal
+    setShowDetailModal(false);
+  };
+
   const getActivityColor = (active, total) => {
     if (total === 0) return '#9ca3af';
     const percentage = (active / total) * 100;
@@ -267,39 +326,6 @@ const AanganwadiStats = ({ onLogout }) => {
               Live Database
             </div>
           </div>
-        </div>
-
-        {/* Statistics Cards */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: '24px', 
-          marginBottom: '32px' 
-        }}>
-          <InfoBox 
-            title="कुल केंद्र" 
-            count="156" 
-            icon="�" 
-            color="blue"
-          />
-          <InfoBox 
-            title="सक्रिय केंद्र" 
-            count="142" 
-            icon="✅" 
-            color="green"
-          />
-          <InfoBox 
-            title="कुल छात्र" 
-            count="7,800" 
-            icon="�" 
-            color="brown"
-          />
-          <InfoBox 
-            title="सक्रिय छात्र" 
-            count="6,892" 
-            icon={<BarChart3 size={24} />} 
-            color="light-brown"
-          />
         </div>
 
         {/* Control Panel */}
@@ -521,7 +547,7 @@ const AanganwadiStats = ({ onLogout }) => {
           ))}
         </div>
 
-        {/* Kendra Grid */}
+        {/* Kendra List */}
         <div style={{ marginTop: '32px', width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -553,166 +579,991 @@ const AanganwadiStats = ({ onLogout }) => {
               </span>
             )}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '24px', width: '100%' }}>
-            {filteredKendras.length > 0 ? (
-              filteredKendras.map((kendra) => (
-              <div key={kendra.k_id} style={{ 
-                padding: '24px', 
-                background: 'rgba(255, 255, 255, 0.95)', 
-                borderRadius: '16px', 
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                border: '2px solid #e2e8f0',
-                transition: 'all 0.3s ease'
-              }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 15px 50px rgba(0, 0, 0, 0.15)';
-                  e.currentTarget.style.borderColor = '#0ea5e9';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1)';
-                  e.currentTarget.style.borderColor = '#e2e8f0';
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', gap: '12px' }}>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b', margin: '0 0 8px 0', lineHeight: '1.4' }}>
-                      {kendra.k_name}
-                    </h4>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span style={{ 
-                        background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                        color: 'white', 
-                        padding: '4px 12px', 
-                        borderRadius: '12px', 
-                        fontSize: '11px', 
-                        fontWeight: 600, 
-                        textTransform: 'uppercase', 
-                        letterSpacing: '0.5px'
-                      }}>
-                        ID: {kendra.k_id}
-                      </span>
-                      <span style={{ 
-                        background: getActivityBg(kendra.active_students, kendra.total_students),
-                        color: getActivityColor(kendra.active_students, kendra.total_students), 
-                        padding: '4px 12px', 
-                        borderRadius: '12px', 
-                        fontSize: '11px', 
-                        fontWeight: 600, 
-                        textTransform: 'uppercase', 
-                        letterSpacing: '0.5px',
-                        border: `1px solid ${getActivityColor(kendra.active_students, kendra.total_students)}30`
-                      }}>
-                        {kendra.sector_name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'grid', gap: '12px' }}>
-                    <div style={{ 
-                      background: '#f8fafc', 
-                      padding: '12px', 
+          
+          {/* Scrollable Table Container */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            border: '2px solid #e2e8f0',
+            overflow: 'hidden'
+          }}>
+            {/* Table Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #059669, #10b981)',
+              color: 'white',
+              padding: '20px',
+              fontSize: '16px',
+              fontWeight: 700,
+              display: 'grid',
+              gridTemplateColumns: '60px 1fr 180px 140px 110px 110px 120px 160px',
+              gap: '16px',
+              alignItems: 'center'
+            }}>
+              <div>ID</div>
+              <div>केंद्र का नाम</div>
+              <div>पता</div>
+              <div>परियोजना</div>
+              <div>सेक्टर</div>
+              <div>छात्र संख्या</div>
+              <div>बनाया गया</div>
+              <div>कार्य</div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div style={{
+              maxHeight: '600px',
+              overflowY: 'auto',
+              overflowX: 'hidden'
+            }}>
+              {filteredKendras.length > 0 ? (
+                filteredKendras.map((kendra, index) => (
+                  <div 
+                    key={kendra.k_id} 
+                    style={{
+                      padding: '20px',
+                      borderBottom: index === filteredKendras.length - 1 ? 'none' : '1px solid #e2e8f0',
+                      display: 'grid',
+                      gridTemplateColumns: '60px 1fr 180px 140px 110px 110px 120px 160px',
+                      gap: '16px',
+                      alignItems: 'center',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = '#f8fafc';
+                      e.currentTarget.style.transform = 'scale(1.01)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    {/* ID Column */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                      color: 'white',
+                      padding: '8px 12px',
                       borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      textAlign: 'center'
                     }}>
-                      <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase' }}>पता</div>
-                      <div style={{ color: '#1e293b', fontSize: '14px', fontWeight: 500 }}>📍 {kendra.k_address}</div>
+                      {kendra.k_id}
                     </div>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <div style={{ 
-                        background: '#eff6ff', 
-                        padding: '12px', 
-                        borderRadius: '8px',
-                        border: '1px solid #bfdbfe',
-                        textAlign: 'center'
+
+                    {/* Name Column */}
+                    <div>
+                      <div style={{
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        color: '#1e293b',
+                        marginBottom: '4px',
+                        lineHeight: '1.3'
                       }}>
-                        <div style={{ fontSize: '12px', color: '#1d4ed8', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase' }}>परियोजना</div>
-                        <div style={{ color: '#1e40af', fontSize: '13px', fontWeight: 600 }}>{kendra.pariyojna_name}</div>
+                        {kendra.k_name}
                       </div>
-                      
-                      <div style={{ 
-                        background: '#f0fdf4', 
-                        padding: '12px', 
-                        borderRadius: '8px',
-                        border: '1px solid #bbf7d0',
-                        textAlign: 'center'
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        fontWeight: 500
                       }}>
-                        <div style={{ fontSize: '12px', color: '#15803d', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase' }}>लॉगिन ID</div>
-                        <div style={{ color: '#166534', fontSize: '13px', fontWeight: 600 }}>🔐 {kendra.login_id}</div>
+                        🔐 {kendra.login_id}
                       </div>
                     </div>
+
+                    {/* Address Column */}
+                    <div style={{
+                      fontSize: '13px',
+                      color: '#374151',
+                      fontWeight: 500,
+                      lineHeight: '1.4',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
+                      📍 {kendra.k_address}
+                    </div>
+
+                    {/* Project Column */}
+                    <div style={{
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: '#1d4ed8',
+                      background: '#eff6ff',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      border: '1px solid #bfdbfe'
+                    }}>
+                      {kendra.pariyojna_name}
+                    </div>
+
+                    {/* Sector Column */}
+                    <div style={{
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: getActivityColor(kendra.active_students, kendra.total_students),
+                      background: getActivityBg(kendra.active_students, kendra.total_students),
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      border: `1px solid ${getActivityColor(kendra.active_students, kendra.total_students)}30`
+                    }}>
+                      {kendra.sector_name}
+                    </div>
+
+                    {/* Students Column */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#1e293b',
+                        marginBottom: '4px'
+                      }}>
+                        {kendra.active_students} / {kendra.total_students}
+                      </div>
+                      <div style={{
+                        width: '100%',
+                        height: '6px',
+                        background: '#e2e8f0',
+                        borderRadius: '3px',
+                        overflow: 'hidden'
+                      }}>
+                        <div 
+                          style={{
+                            width: `${kendra.total_students > 0 ? (kendra.active_students / kendra.total_students) * 100 : 0}%`,
+                            backgroundColor: getActivityColor(kendra.active_students, kendra.total_students),
+                            height: '100%',
+                            borderRadius: '3px',
+                            transition: 'all 0.5s ease'
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Created Date Column */}
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#64748b',
+                      fontWeight: 500,
+                      textAlign: 'center'
+                    }}>
+                      <div>📅 {new Date(kendra.k_createdAt).toLocaleDateString('hi-IN')}</div>
+                      <div style={{ marginTop: '2px', fontSize: '11px' }}>
+                        🔄 {new Date(kendra.k_updatedAt).toLocaleDateString('hi-IN')}
+                      </div>
+                    </div>
+
+                    {/* Actions Column */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '8px',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}>
+                      <button
+                        onClick={() => {
+                          setSelectedKendra(kendra);
+                          setShowDetailModal(true);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                        title="विवरण देखें"
+                      >
+                        <Eye size={14} />
+                        विवरण
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditKendra({
+                            k_id: kendra.k_id,
+                            k_name: kendra.k_name,
+                            k_address: kendra.k_address,
+                            ks_id: kendra.ks_id,
+                            kp_id: kendra.kp_id,
+                            login_id: kendra.login_id,
+                            password: kendra.password
+                          });
+                          setShowEditModal(true);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                        title="संपादित करें"
+                      >
+                        <Edit size={14} />
+                        Edit
+                      </button>
+                    </div>
                   </div>
-                </div>
-                
-                <div style={{ marginTop: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
-                      छात्र गतिविधि
-                    </span>
-                    <span style={{ fontSize: '13px', color: '#1e293b', fontWeight: 700 }}>
-                      {kendra.active_students} / {kendra.total_students}
-                    </span>
-                  </div>
-                  <div style={{ width: '100%', height: '10px', background: '#e2e8f0', borderRadius: '6px', overflow: 'hidden', marginBottom: '12px' }}>
-                    <div 
-                      style={{ 
-                        width: `${kendra.total_students > 0 ? (kendra.active_students / kendra.total_students) * 100 : 0}%`,
-                        backgroundColor: getActivityColor(kendra.active_students, kendra.total_students),
-                        height: '100%',
-                        borderRadius: '6px',
-                        transition: 'all 0.5s ease'
-                      }}
-                    ></div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#64748b' }}>
-                    <span>📅 बनाया: {new Date(kendra.k_createdAt).toLocaleDateString('hi-IN')}</span>
-                    <span>🔄 अपडेट: {new Date(kendra.k_updatedAt).toLocaleDateString('hi-IN')}</span>
-                  </div>
-                </div>
-              </div>
-            ))
-            ) : (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '60px 40px', 
-                background: 'rgba(255, 255, 255, 0.95)', 
-                borderRadius: '16px', 
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                border: '2px solid #e2e8f0'
-              }}>
+                ))
+              ) : (
                 <div style={{
-                  fontSize: '48px',
-                  marginBottom: '16px',
-                  display: 'flex',
-                  justifyContent: 'center'
+                  textAlign: 'center',
+                  padding: '60px 40px',
+                  color: '#64748b'
                 }}>
-                  <Search size={48} color="#64748b" />
+                  <div style={{
+                    fontSize: '48px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}>
+                    <Search size={48} color="#64748b" />
+                  </div>
+                  <h3 style={{
+                    color: '#1e293b',
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    margin: '0 0 8px 0'
+                  }}>
+                    कोई केंद्र नहीं मिला
+                  </h3>
+                  <p style={{
+                    color: '#64748b',
+                    fontSize: '16px',
+                    margin: 0,
+                    fontWeight: 500
+                  }}>
+                    आपके खोज मापदंडों से मेल खाने वाले कोई केंद्र नहीं मिले।
+                  </p>
                 </div>
-                <h3 style={{ 
-                  color: '#1e293b', 
-                  fontSize: '20px', 
-                  fontWeight: 700,
-                  margin: '0 0 8px 0' 
-                }}>
-                  कोई केंद्र नहीं मिला
-                </h3>
-                <p style={{ 
-                  color: '#64748b', 
-                  fontSize: '16px', 
-                  margin: 0,
-                  fontWeight: 500
-                }}>
-                  आपके खोज मापदंडों से मेल खाने वाले कोई केंद्र नहीं मिले।
-                </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Detail Modal */}
+        {showDetailModal && selectedKendra && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            backdropFilter: 'blur(4px)'
+          }} onClick={() => setShowDetailModal(false)}>
+            <div style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+              borderRadius: '20px',
+              width: '90%',
+              maxWidth: '700px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '32px',
+              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(14, 165, 233, 0.2)',
+              position: 'relative'
+            }} onClick={(e) => e.stopPropagation()}>
+              {/* Modal Header */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '32px',
+                paddingBottom: '16px',
+                borderBottom: '2px solid #e2e8f0'
+              }}>
+                <h2 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 700, 
+                  color: '#1e293b', 
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <span style={{
+                    width: '40px',
+                    height: '40px',
+                    background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px'
+                  }}>
+                    🏥
+                  </span>
+                  केंद्र विवरण
+                </h2>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    border: 'none',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    fontSize: '18px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'scale(1.1)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div style={{ display: 'grid', gap: '24px' }}>
+                {/* Basic Info Section */}
+                <div style={{
+                  background: '#f8fafc',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '2px solid #e2e8f0'
+                }}>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    color: '#1e293b',
+                    margin: '0 0 16px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span style={{
+                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                      color: 'white',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}>
+                      ID: {selectedKendra.k_id}
+                    </span>
+                    बुनियादी जानकारी
+                  </h3>
+                  <div style={{ display: 'grid', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>केंद्र का नाम</label>
+                        <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>{selectedKendra.k_name}</div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>लॉगिन आईडी</label>
+                        <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>🔐 {selectedKendra.login_id}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>पूरा पता</label>
+                      <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>📍 {selectedKendra.k_address}</div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>परियोजना</label>
+                        <div style={{ 
+                          fontSize: '14px', 
+                          color: '#1d4ed8', 
+                          fontWeight: 600, 
+                          marginTop: '4px',
+                          background: '#eff6ff',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid #bfdbfe'
+                        }}>
+                          {selectedKendra.pariyojna_name}
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>सेक्टर</label>
+                        <div style={{ 
+                          fontSize: '14px', 
+                          color: getActivityColor(selectedKendra.active_students, selectedKendra.total_students), 
+                          fontWeight: 600, 
+                          marginTop: '4px',
+                          background: getActivityBg(selectedKendra.active_students, selectedKendra.total_students),
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: `1px solid ${getActivityColor(selectedKendra.active_students, selectedKendra.total_students)}30`
+                        }}>
+                          {selectedKendra.sector_name}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Student Statistics */}
+                <div style={{
+                  background: '#f0fdf4',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '2px solid #bbf7d0'
+                }}>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    color: '#1e293b',
+                    margin: '0 0 16px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    👥 छात्र सांख्यिकी
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', textAlign: 'center' }}>
+                    <div style={{
+                      background: 'white',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: '2px solid #dcfce7'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 700, color: '#15803d' }}>{selectedKendra.total_students}</div>
+                      <div style={{ fontSize: '12px', color: '#166534', fontWeight: 600 }}>कुल छात्र</div>
+                    </div>
+                    <div style={{
+                      background: 'white',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: '2px solid #dcfce7'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 700, color: '#059669' }}>{selectedKendra.active_students}</div>
+                      <div style={{ fontSize: '12px', color: '#047857', fontWeight: 600 }}>सक्रिय छात्र</div>
+                    </div>
+                    <div style={{
+                      background: 'white',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: '2px solid #dcfce7'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 700, color: '#10b981' }}>
+                        {selectedKendra.total_students > 0 ? Math.round((selectedKendra.active_students / selectedKendra.total_students) * 100) : 0}%
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#059669', fontWeight: 600 }}>सक्रियता दर</div>
+                    </div>
+                  </div>
+                  
+                  {/* Student Management Button */}
+                  <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => navigateToStudents(selectedKendra)}
+                      style={{
+                        background: 'linear-gradient(135deg, #059669, #10b981)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '16px 32px',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        margin: '0 auto'
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 12px 35px rgba(5, 150, 105, 0.4)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    >
+                      <User size={20} />
+                      छात्रों की जानकारी देखें
+                    </button>
+                  </div>
+                </div>
+
+                {/* Timestamps */}
+                <div style={{
+                  background: '#fefbf3',
+                  padding: '20px',
+                  borderRadius: '16px',
+                  border: '2px solid #fcd34d'
+                }}>
+                  <h3 style={{
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: '#1e293b',
+                    margin: '0 0 12px 0'
+                  }}>
+                    📅 समय विवरण
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#92400e', fontWeight: 600 }}>बनाया गया</label>
+                      <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: 600 }}>
+                        {new Date(selectedKendra.k_createdAt).toLocaleString('hi-IN')}
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#92400e', fontWeight: 600 }}>अंतिम अपडेट</label>
+                      <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: 600 }}>
+                        {new Date(selectedKendra.k_updatedAt).toLocaleString('hi-IN')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Modal */}
+        {showEditModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            backdropFilter: 'blur(4px)'
+          }} onClick={() => setShowEditModal(false)}>
+            <div style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+              borderRadius: '20px',
+              width: '90%',
+              maxWidth: '600px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '32px',
+              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(245, 158, 11, 0.2)',
+              position: 'relative'
+            }} onClick={(e) => e.stopPropagation()}>
+              {/* Modal Header */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '32px',
+                paddingBottom: '16px',
+                borderBottom: '2px solid #e2e8f0'
+              }}>
+                <h2 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 700, 
+                  color: '#1e293b', 
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <span style={{
+                    width: '40px',
+                    height: '40px',
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px'
+                  }}>
+                    ✏️
+                  </span>
+                  केंद्र संपादित करें
+                </h2>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    border: 'none',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    fontSize: '18px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'scale(1.1)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Edit Form */}
+              <form onSubmit={handleEditKendra} style={{ display: 'grid', gap: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: '#1e293b', 
+                      marginBottom: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      केंद्र आईडी
+                    </label>
+                    <input
+                      type="text"
+                      value={editKendra.k_id}
+                      disabled
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        background: '#f3f4f6',
+                        color: '#6b7280',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: '#1e293b', 
+                      marginBottom: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      सेक्टर *
+                    </label>
+                    <select
+                      name="ks_id"
+                      value={editKendra.ks_id}
+                      onChange={handleEditInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        background: '#f8fafc',
+                        transition: 'all 0.3s ease',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                      required
+                    >
+                      <option value="">सेक्टर चुनें</option>
+                      <option value="1">शहरी</option>
+                      <option value="2">ग्रामीण</option>
+                      <option value="3">अर्ध-शहरी</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: '#1e293b', 
+                      marginBottom: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      परियोजना *
+                    </label>
+                    <select
+                      name="kp_id"
+                      value={editKendra.kp_id}
+                      onChange={handleEditInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        background: '#f8fafc',
+                        transition: 'all 0.3s ease',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                      required
+                    >
+                      <option value="">परियोजना चुनें</option>
+                      <option value="1">पोषण आहार कार्यक्रम</option>
+                      <option value="2">स्वास्थ्य सेवा कार्यक्रम</option>
+                      <option value="3">शिक्षा एवं विकास कार्यक्रम</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: '#1e293b', 
+                      marginBottom: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      लॉगिन आईडी *
+                    </label>
+                    <input
+                      type="text"
+                      name="login_id"
+                      value={editKendra.login_id}
+                      onChange={handleEditInputChange}
+                      placeholder="उदाहरण: admin001"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        background: '#f8fafc',
+                        transition: 'all 0.3s ease',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: 600, 
+                    color: '#1e293b', 
+                    marginBottom: '8px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    केंद्र नाम *
+                  </label>
+                  <input
+                    type="text"
+                    name="k_name"
+                    value={editKendra.k_name}
+                    onChange={handleEditInputChange}
+                    placeholder="केंद्र का नाम दर्ज करें"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      background: '#f8fafc',
+                      transition: 'all 0.3s ease',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: 600, 
+                    color: '#1e293b', 
+                    marginBottom: '8px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    पता *
+                  </label>
+                  <textarea
+                    name="k_address"
+                    value={editKendra.k_address}
+                    onChange={handleEditInputChange}
+                    placeholder="पूरा पता दर्ज करें"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      background: '#f8fafc',
+                      transition: 'all 0.3s ease',
+                      outline: 'none',
+                      minHeight: '80px',
+                      resize: 'vertical',
+                      boxSizing: 'border-box'
+                    }}
+                    rows="3"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    fontSize: '14px', 
+                    fontWeight: 600, 
+                    color: '#1e293b', 
+                    marginBottom: '8px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    पासवर्ड
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={editKendra.password}
+                    onChange={handleEditInputChange}
+                    placeholder="नया पासवर्ड दर्ज करें (वैकल्पिक)"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      background: '#f8fafc',
+                      transition: 'all 0.3s ease',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                {/* Modal Actions */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'flex-end', 
+                  gap: '16px', 
+                  marginTop: '32px',
+                  paddingTop: '24px',
+                  borderTop: '2px solid #e2e8f0'
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    style={{
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #6b7280, #9ca3af)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(107, 114, 128, 0.4)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    रद्द करें
+                  </button>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    अपडेट करें
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Add Kendra Modal */}
         {showAddModal && (

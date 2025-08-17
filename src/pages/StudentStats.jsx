@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home } from 'lucide-react';
+import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home, Camera, Image, Download } from 'lucide-react';
 import '../styles/unified.css';
 
 const StudentStats = ({ onLogout }) => {
@@ -16,6 +16,11 @@ const StudentStats = ({ onLogout }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [selectedStudentPhotos, setSelectedStudentPhotos] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
 
   // Sample data based on master_student schema
   const students = [
@@ -211,6 +216,31 @@ const StudentStats = ({ onLogout }) => {
     }
   ];
 
+  // Sample data for dropdowns based on foreign key tables
+  const pariyojnaOptions = [
+    { p_id: 1, p_name: 'पोषण आहार' },
+    { p_id: 2, p_name: 'स्वास्थ्य सेवा' },
+    { p_id: 3, p_name: 'शिक्षा कार्यक्रम' }
+  ];
+
+  const sectorOptions = [
+    { s_id: 1, sp_id: 1, s_name: 'शहरी' },
+    { s_id: 2, sp_id: 1, s_name: 'ग्रामीण' },
+    { s_id: 3, sp_id: 2, s_name: 'अर्ध-शहरी' }
+  ];
+
+  const kendraOptions = [
+    { k_id: 8, ks_id: 1, kp_id: 3, k_name: 'प्री-स्कूल केंद्र 8' },
+    { k_id: 10, ks_id: 1, kp_id: 1, k_name: 'शहरी आंगनवाड़ी 10' },
+    { k_id: 12, ks_id: 1, kp_id: 2, k_name: 'आंगनवाड़ी केंद्र 12' },
+    { k_id: 15, ks_id: 2, kp_id: 1, k_name: 'CHC RAIPUR' },
+    { k_id: 18, ks_id: 2, kp_id: 3, k_name: 'प्राथमिक स्वास्थ्य केंद्र 18' },
+    { k_id: 20, ks_id: 2, kp_id: 1, k_name: 'ग्रामीण स्वास्थ्य केंद्र 20' },
+    { k_id: 22, ks_id: 2, kp_id: 2, k_name: 'पहाड़ी स्वास्थ्य केंद्र 22' }
+  ];
+
+  const healthStatusOptions = ['स्वस्थ', 'कमज़ोर', 'बीमार', 'सामान्य'];
+
   const handleFilterChange = (e) => {
     setFilters({
       ...filters,
@@ -277,6 +307,82 @@ const StudentStats = ({ onLogout }) => {
   const closeModal = () => {
     setShowModal(false);
     setSelectedStudent(null);
+  };
+
+  const openPhotoModal = (student) => {
+    // Sample photo data - यहाँ backend से photos आएंगी
+    const photoData = {
+      distribution_photo: `https://via.placeholder.com/400x300/22c55e/ffffff?text=Distribution+Photo+${student.s_id}`,
+      certificate_photo: `https://via.placeholder.com/400x300/f59e0b/ffffff?text=Certificate+Photo+${student.s_id}`,
+      plant_photo: `https://via.placeholder.com/400x300/3b82f6/ffffff?text=Latest+Plant+Photo+${student.s_id}`
+    };
+    
+    setSelectedStudentPhotos({
+      student: student,
+      photos: photoData
+    });
+    setShowPhotoModal(true);
+  };
+
+  const closePhotoModal = () => {
+    setShowPhotoModal(false);
+    setSelectedStudentPhotos(null);
+  };
+
+  const openEditModal = (student) => {
+    setEditingStudent(student);
+    setEditFormData({
+      s_id: student.s_id,
+      sp_id: student.sp_id,
+      ss_id: student.ss_id,
+      sk_id: student.sk_id,
+      s_name: student.s_name,
+      s_mobile: student.s_mobile,
+      s_father: student.s_father,
+      s_mother: student.s_mother,
+      s_height: student.s_height,
+      s_weight: student.s_weight,
+      s_age: student.s_age,
+      s_dob: student.s_dob,
+      s_healtha_status: student.s_healtha_status,
+      s_address: student.s_address
+    });
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingStudent(null);
+    setEditFormData({});
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    // यहाँ API call करके database में update करेंगे
+    console.log('Updating student:', editFormData);
+    alert('✅ स्टूडेंट की जानकारी सफलतापूर्वक अपडेट हो गई!');
+    closeEditModal();
+  };
+
+  // Filter sectors based on selected pariyojna
+  const getFilteredSectors = (selectedPariyojnaId) => {
+    return sectorOptions.filter(sector => sector.sp_id === parseInt(selectedPariyojnaId));
+  };
+
+  // Filter kendras based on selected sector and pariyojna
+  const getFilteredKendras = (selectedSectorId, selectedPariyojnaId) => {
+    return kendraOptions.filter(kendra => 
+      kendra.ks_id === parseInt(selectedSectorId) && 
+      kendra.kp_id === parseInt(selectedPariyojnaId)
+    );
   };
 
   const getHealthStatusColor = (status) => {
@@ -388,7 +494,7 @@ const StudentStats = ({ onLogout }) => {
                   onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
                   onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
                 >
-                  ×
+                  <X size={16} />
                 </button>
               )}
             </div>
@@ -595,7 +701,12 @@ const StudentStats = ({ onLogout }) => {
                     <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>केंद्र</th>
                     <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>परियोजना</th>
                     <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>पता</th>
-                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>कार्य</th>
+                    <th style={{ padding: '20px 16px', textAlign: 'left', fontWeight: 700, borderBottom: '3px solid #0ea5e9', fontSize: '14px', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Camera size={16} color="white" />
+                        कार्य
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -623,11 +734,11 @@ const StudentStats = ({ onLogout }) => {
                       <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
                         <div style={{ lineHeight: '1.4' }}>
                           <div style={{ color: '#1e293b', fontWeight: 600, marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <User size={14} />
+                            <User size={14} color="#1e293b" />
                             {student.s_father}
                           </div>
                           <div style={{ color: '#1e293b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <User size={14} />
+                            <User size={14} color="#1e293b" />
                             {student.s_mother}
                           </div>
                         </div>
@@ -647,7 +758,7 @@ const StudentStats = ({ onLogout }) => {
                             justifyContent: 'center',
                             gap: '4px'
                           }}>
-                            <Ruler size={12} />
+                            <Ruler size={12} color="#0369a1" />
                             {student.s_height}
                           </span>
                           <span style={{ 
@@ -675,7 +786,7 @@ const StudentStats = ({ onLogout }) => {
                             justifyContent: 'center',
                             gap: '4px'
                           }}>
-                            <Calendar size={12} />
+                            <Calendar size={12} color="#7c3aed" />
                             {student.s_age} साल
                           </span>
                         </div>
@@ -746,66 +857,98 @@ const StudentStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }} title={student.s_address}>
-                          <MapPin size={14} />
+                          <MapPin size={14} color="#64748b" />
                           {student.s_address}
                         </div>
                       </td>
                       <td style={{ padding: '16px', verticalAlign: 'middle', fontSize: '14px' }}>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
                           <button 
                             onClick={() => openModal(student)}
                             title="विवरण देखें"
                             style={{ 
-                              background: 'linear-gradient(135deg, #22c55e, #16a34a)', 
-                              border: 'none', 
-                              borderRadius: '8px', 
-                              width: '36px', 
-                              height: '36px', 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              cursor: 'pointer', 
-                              transition: 'all 0.3s ease', 
-                              fontSize: '16px',
-                              color: 'white'
+                              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 10px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px'
                             }}
-                            onMouseOver={(e) => { 
-                              e.target.style.transform = 'translateY(-2px) scale(1.1)'; 
-                              e.target.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.4)';
+                            onMouseOver={(e) => {
+                              e.target.style.transform = 'translateY(-2px)';
+                              e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
                             }}
-                            onMouseOut={(e) => { 
-                              e.target.style.transform = 'translateY(0) scale(1)'; 
+                            onMouseOut={(e) => {
+                              e.target.style.transform = 'translateY(0)';
                               e.target.style.boxShadow = 'none';
                             }}
                           >
-                            <Eye size={16} color="white" />
+                            <Eye size={12} />
+                            
                           </button>
                           <button 
                             title="संपादित करें"
+                            onClick={() => openEditModal(student)}
                             style={{ 
-                              background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
-                              border: 'none', 
-                              borderRadius: '8px', 
-                              width: '36px', 
-                              height: '36px', 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              cursor: 'pointer', 
-                              transition: 'all 0.3s ease', 
-                              fontSize: '16px',
-                              color: 'white'
+                              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 10px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px'
                             }}
-                            onMouseOver={(e) => { 
-                              e.target.style.transform = 'translateY(-2px) scale(1.1)'; 
+                            onMouseOver={(e) => {
+                              e.target.style.transform = 'translateY(-2px)';
                               e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
                             }}
-                            onMouseOut={(e) => { 
-                              e.target.style.transform = 'translateY(0) scale(1)'; 
+                            onMouseOut={(e) => {
+                              e.target.style.transform = 'translateY(0)';
                               e.target.style.boxShadow = 'none';
                             }}
                           >
-                            <Edit size={16} color="white" />
+                            <Edit size={12} />
+                            
+                          </button>
+                          <button 
+                            title="� फ़ोटो देखें"
+                            onClick={() => openPhotoModal(student)}
+                            style={{ 
+                              background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 10px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                            onMouseOver={(e) => {
+                              e.target.style.transform = 'translateY(-2px)';
+                              e.target.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.4)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.target.style.transform = 'translateY(0)';
+                              e.target.style.boxShadow = 'none';
+                            }}
+                          >
+                            <Camera size={12} />
+                            
                           </button>
                         </div>
                       </td>
@@ -845,18 +988,6 @@ const StudentStats = ({ onLogout }) => {
                 </p>
               </div>
             )}
-          </div>
-          
-          {/* Pagination */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '24px', padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
-            <button style={{ background: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: 'white' }}>1</button>
-            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>2</button>
-            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>3</button>
-            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>4</button>
-            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>5</button>
-            <span style={{ color: '#6b7280', fontSize: '16px', margin: '0 8px' }}>...</span>
-            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>»</button>
-            <button style={{ background: 'white', border: '1px solid #d1d5db', borderRadius: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '14px', fontWeight: 500, color: '#374151' }}>»</button>
           </div>
         </div>
 
@@ -970,7 +1101,7 @@ const StudentStats = ({ onLogout }) => {
                       alignItems: 'center',
                       gap: '8px'
                     }}>
-                      <User size={20} />
+                      <User size={20} color="#1e293b" />
                       व्यक्तिगत जानकारी
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -1069,7 +1200,7 @@ const StudentStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}>
-                          <User size={14} />
+                          <User size={14} color="#1e293b" />
                           {selectedStudent.s_mother}
                         </span>
                       </div>
@@ -1097,7 +1228,7 @@ const StudentStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}>
-                          <Calendar size={14} />
+                          <Calendar size={14} color="#1e293b" />
                           {new Date(selectedStudent.s_dob).toLocaleDateString('hi-IN')}
                         </span>
                       </div>
@@ -1125,7 +1256,7 @@ const StudentStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}>
-                          <Calendar size={14} />
+                          <Calendar size={14} color="#1e293b" />
                           {selectedStudent.s_age} साल
                         </span>
                       </div>
@@ -1143,7 +1274,7 @@ const StudentStats = ({ onLogout }) => {
                       alignItems: 'center',
                       gap: '8px'
                     }}>
-                      <Activity size={20} />
+                      <Activity size={20} color="#1e293b" />
                       शारीरिक विवरण
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
@@ -1312,7 +1443,7 @@ const StudentStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}>
-                          <Hospital size={14} />
+                          <Hospital size={14} color="#1e293b" />
                           {selectedStudent.kendra_name} (ID: {selectedStudent.sk_id})
                         </span>
                       </div>
@@ -1341,7 +1472,7 @@ const StudentStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}>
-                          <MapPin size={14} />
+                          <MapPin size={14} color="#1e293b" />
                           {selectedStudent.s_address}
                         </span>
                       </div>
@@ -1395,6 +1526,1104 @@ const StudentStats = ({ onLogout }) => {
                 >
                   संपादित करें
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Photo Modal */}
+        {showPhotoModal && selectedStudentPhotos && (
+          <div style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            background: 'rgba(0, 0, 0, 0.8)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            zIndex: 1000,
+            backdropFilter: 'blur(8px)'
+          }} onClick={closePhotoModal}>
+            <div style={{ 
+              background: 'white', 
+              borderRadius: '20px', 
+              maxWidth: '1000px', 
+              width: '95%', 
+              maxHeight: '90vh', 
+              overflow: 'hidden', 
+              position: 'relative',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
+              border: '2px solid #e2e8f0'
+            }} onClick={(e) => e.stopPropagation()}>
+              
+              {/* Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                color: 'white',
+                padding: '24px 32px',
+                position: 'relative'
+              }}>
+                <button 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '20px', 
+                    right: '20px', 
+                    background: 'rgba(255, 255, 255, 0.2)', 
+                    border: 'none', 
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    fontSize: '20px', 
+                    cursor: 'pointer', 
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease'
+                  }} 
+                  onClick={closePhotoModal}
+                  onMouseOver={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.3)'; }}
+                  onMouseOut={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
+                >
+                  <X size={20} color="#ffffff" />
+                </button>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '28px'
+                  }}>
+                    <Camera size={28} color="white" />
+                  </div>
+                  <div>
+                    <h2 style={{ 
+                      fontSize: '24px', 
+                      fontWeight: 700, 
+                      margin: '0 0 4px 0'
+                    }}>
+                      {selectedStudentPhotos.student.s_name} की फ़ोटो गैलरी
+                    </h2>
+                    <p style={{ 
+                      fontSize: '14px', 
+                      opacity: 0.9, 
+                      margin: 0
+                    }}>
+                      Student ID: {selectedStudentPhotos.student.s_id} | Photos Collection
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Photos Grid */}
+              <div style={{ 
+                padding: '32px',
+                maxHeight: '500px', 
+                overflowY: 'auto'
+              }}>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+                  gap: '24px' 
+                }}>
+                  
+                  {/* Distribution Photo */}
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    border: '2px solid #e2e8f0',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <div style={{
+                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                      color: 'white',
+                      padding: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <Image size={20} color="white" />
+                      <h3 style={{ 
+                        fontSize: '16px', 
+                        fontWeight: 600, 
+                        margin: 0 
+                      }}>
+                        डिस्ट्रिब्यूशन फ़ोटो
+                      </h3>
+                    </div>
+                    <div style={{ padding: '16px' }}>
+                      <img 
+                        src={selectedStudentPhotos.photos.distribution_photo}
+                        alt="Distribution Photo"
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      />
+                      <div style={{ 
+                        marginTop: '12px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: '#64748b',
+                          fontWeight: 500
+                        }}>
+                          पोषण आहार वितरण
+                        </span>
+                        <button 
+                          style={{
+                            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
+                          onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
+                        >
+                          <Download size={12} />
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Certificate Photo */}
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    border: '2px solid #e2e8f0',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <div style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: 'white',
+                      padding: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <Image size={20} color="white" />
+                      <h3 style={{ 
+                        fontSize: '16px', 
+                        fontWeight: 600, 
+                        margin: 0 
+                      }}>
+                        सर्टिफिकेट फ़ोटो
+                      </h3>
+                    </div>
+                    <div style={{ padding: '16px' }}>
+                      <img 
+                        src={selectedStudentPhotos.photos.certificate_photo}
+                        alt="Certificate Photo"
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      />
+                      <div style={{ 
+                        marginTop: '12px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: '#64748b',
+                          fontWeight: 500
+                        }}>
+                          उपलब्धि प्रमाणपत्र
+                        </span>
+                        <button 
+                          style={{
+                            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
+                          onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
+                        >
+                          <Download size={12} />
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Latest Plant Photo */}
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    border: '2px solid #e2e8f0',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <div style={{
+                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                      color: 'white',
+                      padding: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <Image size={20} color="white" />
+                      <h3 style={{ 
+                        fontSize: '16px', 
+                        fontWeight: 600, 
+                        margin: 0 
+                      }}>
+                        लेटेस्ट प्लांट फ़ोटो
+                      </h3>
+                    </div>
+                    <div style={{ padding: '16px' }}>
+                      <img 
+                        src={selectedStudentPhotos.photos.plant_photo}
+                        alt="Latest Plant Photo"
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      />
+                      <div style={{ 
+                        marginTop: '12px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: '#64748b',
+                          fontWeight: 500
+                        }}>
+                          पौधारोपण कार्यक्रम
+                        </span>
+                        <button 
+                          style={{
+                            background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
+                          onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
+                        >
+                          <Download size={12} />
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              
+              {/* Footer */}
+              <div style={{
+                background: '#f8fafc',
+                padding: '20px 32px',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#64748b',
+                  fontWeight: 500
+                }}>
+                  📸 HarGhar Munga Photo Gallery | Student ID: {selectedStudentPhotos.student.s_id}
+                </div>
+                <button 
+                  onClick={closePhotoModal}
+                  style={{
+                    background: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => { e.target.style.background = '#4b5563'; }}
+                  onMouseOut={(e) => { e.target.style.background = '#6b7280'; }}
+                >
+                  बंद करें
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Student Modal */}
+        {showEditModal && editingStudent && (
+          <div style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            background: 'rgba(0, 0, 0, 0.7)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            zIndex: 1000,
+            backdropFilter: 'blur(6px)'
+          }} onClick={closeEditModal}>
+            <div style={{ 
+              background: 'white', 
+              borderRadius: '20px', 
+              maxWidth: '1200px', 
+              width: '95%', 
+              maxHeight: '95vh', 
+              overflow: 'hidden', 
+              position: 'relative',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
+              border: '2px solid #e2e8f0',
+              display: 'flex',
+              flexDirection: 'column'
+            }} onClick={(e) => e.stopPropagation()}>
+              
+              {/* Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                color: 'white',
+                padding: '24px 32px',
+                position: 'relative',
+                flexShrink: 0
+              }}>
+                <button 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '20px', 
+                    right: '20px', 
+                    background: 'rgba(255, 255, 255, 0.2)', 
+                    border: 'none', 
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    fontSize: '20px', 
+                    cursor: 'pointer', 
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease'
+                  }} 
+                  onClick={closeEditModal}
+                  onMouseOver={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.3)'; }}
+                  onMouseOut={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
+                >
+                  <X size={20} color="white" />
+                </button>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '28px'
+                  }}>
+                    <Edit size={28} color="white" />
+                  </div>
+                  <div>
+                    <h2 style={{ 
+                      fontSize: '24px', 
+                      fontWeight: 700, 
+                      margin: '0 0 4px 0'
+                    }}>
+                      स्टूडेंट की जानकारी संपादित करें
+                    </h2>
+                    <p style={{ 
+                      fontSize: '14px', 
+                      opacity: 0.9, 
+                      margin: 0
+                    }}>
+                      {editingStudent.s_name} (ID: {editingStudent.s_id}) | Master Student Database
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Edit Form */}
+              <div className="edit-form-container" style={{ 
+                flex: 1,
+                overflowY: 'auto', 
+                padding: '0',
+                scrollBehavior: 'smooth',
+                minHeight: 0
+              }}>
+                <form onSubmit={handleEditSubmit} style={{ padding: '32px' }}>
+                  
+                  {/* Basic Information Section */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: 700, 
+                      color: '#1e293b', 
+                      margin: '0 0 20px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderBottom: '2px solid #f1f5f9',
+                      paddingBottom: '10px'
+                    }}>
+                      <User size={20} color="#1e293b" />
+                      व्यक्तिगत जानकारी
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                      
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          बच्चे का नाम *
+                        </label>
+                        <input
+                          type="text"
+                          name="s_name"
+                          value={editFormData.s_name || ''}
+                          onChange={handleEditFormChange}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          मोबाइल नंबर
+                        </label>
+                        <input
+                          type="number"
+                          name="s_mobile"
+                          value={editFormData.s_mobile || ''}
+                          onChange={handleEditFormChange}
+                          maxLength="10"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          पिता का नाम
+                        </label>
+                        <input
+                          type="text"
+                          name="s_father"
+                          value={editFormData.s_father || ''}
+                          onChange={handleEditFormChange}
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          माता का नाम
+                        </label>
+                        <input
+                          type="text"
+                          name="s_mother"
+                          value={editFormData.s_mother || ''}
+                          onChange={handleEditFormChange}
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          जन्म तिथि
+                        </label>
+                        <input
+                          type="date"
+                          name="s_dob"
+                          value={editFormData.s_dob || ''}
+                          onChange={handleEditFormChange}
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          उम्र (साल)
+                        </label>
+                        <input
+                          type="number"
+                          name="s_age"
+                          value={editFormData.s_age || ''}
+                          onChange={handleEditFormChange}
+                          min="0"
+                          max="18"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Physical Information Section */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: 700, 
+                      color: '#1e293b', 
+                      margin: '0 0 20px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderBottom: '2px solid #f1f5f9',
+                      paddingBottom: '10px'
+                    }}>
+                      <Activity size={20} color="#1e293b" />
+                      शारीरिक विवरण
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                      
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          कद (Height)
+                        </label>
+                        <input
+                          type="text"
+                          name="s_height"
+                          value={editFormData.s_height || ''}
+                          onChange={handleEditFormChange}
+                          placeholder="उदाहरण: 95 cm"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          वजन (Weight)
+                        </label>
+                        <input
+                          type="text"
+                          name="s_weight"
+                          value={editFormData.s_weight || ''}
+                          onChange={handleEditFormChange}
+                          placeholder="उदाहरण: 14.5 kg"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          स्वास्थ्य स्थिति *
+                        </label>
+                        <select
+                          name="s_healtha_status"
+                          value={editFormData.s_healtha_status || ''}
+                          onChange={handleEditFormChange}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        >
+                          <option value="">स्वास्थ्य स्थिति चुनें</option>
+                          {healthStatusOptions.map(status => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Project & Location Section */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: 700, 
+                      color: '#1e293b', 
+                      margin: '0 0 20px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderBottom: '2px solid #f1f5f9',
+                      paddingBottom: '10px'
+                    }}>
+                      <Building size={20} color="#1e293b" />
+                      परियोजना एवं स्थान की जानकारी
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                      
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          परियोजना *
+                        </label>
+                        <select
+                          name="sp_id"
+                          value={editFormData.sp_id || ''}
+                          onChange={handleEditFormChange}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        >
+                          <option value="">परियोजना चुनें</option>
+                          {pariyojnaOptions.map(pariyojna => (
+                            <option key={pariyojna.p_id} value={pariyojna.p_id}>
+                              {pariyojna.p_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          सेक्टर *
+                        </label>
+                        <select
+                          name="ss_id"
+                          value={editFormData.ss_id || ''}
+                          onChange={handleEditFormChange}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        >
+                          <option value="">सेक्टर चुनें</option>
+                          {getFilteredSectors(editFormData.sp_id).map(sector => (
+                            <option key={sector.s_id} value={sector.s_id}>
+                              {sector.s_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          marginBottom: '8px', 
+                          fontWeight: 600, 
+                          color: '#1e293b', 
+                          fontSize: '14px' 
+                        }}>
+                          केंद्र *
+                        </label>
+                        <select
+                          name="sk_id"
+                          value={editFormData.sk_id || ''}
+                          onChange={handleEditFormChange}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: '2px solid #e2e8f0',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            boxSizing: 'border-box',
+                            background: 'white',
+                            color: '#1e293b',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        >
+                          <option value="">केंद्र चुनें</option>
+                          {getFilteredKendras(editFormData.ss_id, editFormData.sp_id).map(kendra => (
+                            <option key={kendra.k_id} value={kendra.k_id}>
+                              {kendra.k_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Address Section */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      fontWeight: 700, 
+                      color: '#1e293b', 
+                      margin: '0 0 20px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderBottom: '2px solid #f1f5f9',
+                      paddingBottom: '10px'
+                    }}>
+                      <MapPin size={20} color="#1e293b" />
+                      पता
+                    </h3>
+                    <div>
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '8px', 
+                        fontWeight: 600, 
+                        color: '#1e293b', 
+                        fontSize: '14px' 
+                      }}>
+                        संपूर्ण पता
+                      </label>
+                      <textarea
+                        name="s_address"
+                        value={editFormData.s_address || ''}
+                        onChange={handleEditFormChange}
+                        rows="3"
+                        placeholder="पूरा पता लिखें..."
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          borderRadius: '8px',
+                          border: '2px solid #e2e8f0',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          boxSizing: 'border-box',
+                          background: 'white',
+                          color: '#1e293b',
+                          transition: 'all 0.3s ease',
+                          resize: 'vertical',
+                          minHeight: '80px'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                      />
+                    </div>
+                  </div>
+
+                </form>
+                
+                {/* Custom Scrollbar Styles */}
+                <style>{`
+                  .edit-form-container::-webkit-scrollbar {
+                    width: 8px;
+                  }
+                  .edit-form-container::-webkit-scrollbar-track {
+                    background: #f1f5f9;
+                    border-radius: 10px;
+                  }
+                  .edit-form-container::-webkit-scrollbar-thumb {
+                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    border-radius: 10px;
+                  }
+                  .edit-form-container::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(135deg, #d97706, #b45309);
+                  }
+                `}</style>
+              </div>
+              
+              {/* Footer with Action Buttons */}
+              <div style={{
+                background: '#f8fafc',
+                padding: '20px 32px',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '16px',
+                flexShrink: 0
+              }}>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#64748b',
+                  fontWeight: 500
+                }}>
+                  ⚠️ सभी आवश्यक फ़ील्ड (*) भरना अनिवार्य है
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    type="button"
+                    onClick={closeEditModal}
+                    style={{
+                      background: '#6b7280',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => { e.target.style.background = '#4b5563'; }}
+                    onMouseOut={(e) => { e.target.style.background = '#6b7280'; }}
+                  >
+                    रद्द करें
+                  </button>
+                  <button 
+                    type="submit"
+                    onClick={handleEditSubmit}
+                    style={{
+                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseOver={(e) => { 
+                      e.target.style.transform = 'translateY(-1px)'; 
+                      e.target.style.boxShadow = '0 8px 20px rgba(34, 197, 94, 0.4)';
+                    }}
+                    onMouseOut={(e) => { 
+                      e.target.style.transform = 'translateY(0)'; 
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    💾 सेव करें
+                  </button>
+                </div>
               </div>
             </div>
           </div>

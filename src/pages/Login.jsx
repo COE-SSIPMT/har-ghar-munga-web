@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lock, Eye, EyeOff, Sprout, Shield, Building, Rocket, Flag } from 'lucide-react';
 import logoImage from '/images/logo.jpg';
+import serverURL from './server';
+import { saveLoginCredentials, getSavedLoginCredentials, saveUserSession, areCookiesEnabled } from '../utils/cookies';
 import '../styles/unified.css';
 
 const Login = ({ onLogin }) => {
@@ -9,14 +11,75 @@ const Login = ({ onLogin }) => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [cookiesEnabled, setCookiesEnabled] = useState(true);
 
-  const handleSubmit = (e) => {
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const checkCookies = areCookiesEnabled();
+    setCookiesEnabled(checkCookies);
+    
+    if (checkCookies) {
+      const savedCredentials = getSavedLoginCredentials();
+      if (savedCredentials.username) {
+        setCredentials(prev => ({
+          ...prev,
+          username: savedCredentials.username
+        }));
+        setRememberMe(savedCredentials.rememberMe);
+      }
+    }
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simple validation - in real app, you'd validate against backend
-    if (credentials.username && credentials.password) {
-      onLogin();
-    } else {
-      alert('Please enter both username and password');
+    setError('');
+    
+    // Basic validation
+    if (!credentials.username.trim() || !credentials.password.trim()) {
+      setError('Please enter both username and password');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${serverURL}hgm_login_web.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: credentials.username.trim(),
+          password: credentials.password.trim()
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Store admin data in localStorage
+        localStorage.setItem('adminData', JSON.stringify(data.data));
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // Save credentials to cookies if remember me is checked
+        if (cookiesEnabled) {
+          saveLoginCredentials(credentials.username.trim(), rememberMe);
+          saveUserSession(data.data, rememberMe);
+        }
+        
+        // Call the onLogin function passed from parent
+        onLogin(data.data);
+      } else {
+        setError(data.message || 'Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -271,6 +334,42 @@ const Login = ({ onLogin }) => {
               </p>
             </div>
             
+            {/* Cookie status message */}
+            {!cookiesEnabled && (
+              <div style={{
+                background: 'linear-gradient(135deg, #fef3cd, #fde68a)',
+                border: '1px solid #fbbf24',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '16px',
+                color: '#92400e',
+                fontSize: '14px',
+                fontWeight: 600,
+                textAlign: 'center',
+                boxShadow: '0 4px 12px rgba(251, 191, 36, 0.15)'
+              }}>
+                ⚠️ Cookies disabled - "याद रखें" feature काम नहीं करेगा
+              </div>
+            )}
+            
+            {/* Error message display */}
+            {error && (
+              <div style={{
+                background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+                border: '1px solid #fecaca',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '24px',
+                color: '#dc2626',
+                fontSize: '14px',
+                fontWeight: 600,
+                textAlign: 'center',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.15)'
+              }}>
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} style={{ width: '100%' }}>
               <div style={{ marginBottom: '22px' }}>
                 <label style={{ 
@@ -386,38 +485,90 @@ const Login = ({ onLogin }) => {
                   </button>
                 </div>
               </div>
+
+              {/* Remember Me Checkbox */}
+              <div style={{ 
+                marginBottom: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <label style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  cursor: 'pointer',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#374151'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      accentColor: '#059669',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span>मुझे याद रखें</span>
+                </label>
+                
+                {!cookiesEnabled && (
+                  <span style={{
+                    fontSize: '12px',
+                    color: '#ef4444',
+                    fontWeight: 500
+                  }}>
+                    ⚠️ Cookies disabled
+                  </span>
+                )}
+              </div>
               
               <button 
                 type="submit" 
+                disabled={isLoading}
                 style={{ 
                   width: '100%', 
                   padding: '18px 24px', 
                   fontSize: '16px', 
                   fontWeight: 700, 
-                  background: 'linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%)', 
+                  background: isLoading ? 
+                    'linear-gradient(135deg, #9ca3af 0%, #6b7280 50%, #4b5563 100%)' : 
+                    'linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%)', 
                   border: 'none', 
                   borderRadius: '16px', 
                   color: '#fff', 
-                  cursor: 'pointer', 
+                  cursor: isLoading ? 'not-allowed' : 'pointer', 
                   transition: 'all 0.4s ease',
-                  boxShadow: '0 10px 35px rgba(6, 95, 70, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.25)',
+                  boxShadow: isLoading ? 
+                    '0 6px 20px rgba(107, 114, 128, 0.3)' :
+                    '0 10px 35px rgba(6, 95, 70, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.25)',
                   position: 'relative',
                   overflow: 'hidden',
                   textTransform: 'none',
                   letterSpacing: '0.3px',
                   minHeight: '58px',
-                  outline: 'none'
+                  outline: 'none',
+                  opacity: isLoading ? 0.7 : 1
                 }}
                 onMouseOver={(e) => { 
-                  e.target.style.transform = 'translateY(-2px)'; 
-                  e.target.style.boxShadow = '0 8px 25px rgba(6, 95, 70, 0.4)';
+                  if (!isLoading) {
+                    e.target.style.transform = 'translateY(-2px)'; 
+                    e.target.style.boxShadow = '0 8px 25px rgba(6, 95, 70, 0.4)';
+                  }
                 }}
                 onMouseOut={(e) => { 
-                  e.target.style.transform = 'translateY(0)'; 
-                  // e.target.style.boxShadow = '0 6px 20px rgba(6, 95, 70, 0.3)';
+                  if (!isLoading) {
+                    e.target.style.transform = 'translateY(0)'; 
+                  }
                 }}
               >
-                <span style={{ position: 'relative', zIndex: 1 }}>Sign In to Dashboard</span>
+                <span style={{ position: 'relative', zIndex: 1 }}>
+                  {isLoading ? 'Signing In...' : 'Sign In to Dashboard'}
+                </span>
               </button>
             </form>
             
