@@ -2079,6 +2079,29 @@ button span, button span * {
   animation: spin 1s linear infinite;
 }
 
+/* ========================================
+   Action Button Hover Effects - Fix for Repetitive Animations
+======================================== */
+.action-btn {
+  transition: all 0.3s ease !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px) !important;
+}
+
+.action-btn-view:hover {
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4) !important;
+}
+
+.action-btn-edit:hover {
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4) !important;
+}
+
+.action-btn-student:hover {
+  box-shadow: 0 8px 25px rgba(22, 163, 74, 0.4) !important;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);

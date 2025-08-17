@@ -65,6 +65,7 @@ function getStudents($conn) {
                 s.s_mother,
                 s.s_height,
                 s.s_weight,
+                s.s_gender,
                 s.s_age,
                 s.s_dob,
                 s.s_healtha_status,
@@ -195,6 +196,7 @@ function getStudentDetails($conn) {
                 s.s_mother,
                 s.s_height,
                 s.s_weight,
+                s.s_gender,
                 s.s_age,
                 s.s_dob,
                 s.s_healtha_status,
@@ -313,7 +315,7 @@ function updateStudent($conn) {
         $params = [':s_id' => $student_id];
         
         $allowedFields = ['sp_id', 'ss_id', 'sk_id', 's_name', 's_mobile', 's_father', 's_mother', 
-                         's_height', 's_weight', 's_age', 's_dob', 's_healtha_status', 's_address'];
+                         's_height', 's_weight', 's_gender', 's_age', 's_dob', 's_healtha_status', 's_address'];
         
         foreach ($allowedFields as $field) {
             if (isset($input[$field])) {

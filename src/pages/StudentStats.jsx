@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Eye, Edit, Baby, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home, Camera, Image, Download, RotateCcw } from 'lucide-react';
+import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home, Camera, Image, Download, RotateCcw } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import serverURL from './server';
 import '../styles/unified.css';
 
@@ -343,6 +344,83 @@ const StudentStats = ({ onLogout }) => {
     }
   };
 
+  // Excel Export Function
+  const exportToExcel = () => {
+    try {
+      // Prepare data for export with Hindi headers
+      const exportData = filteredStudents.map((student, index) => ({
+        'क्रम संख्या': index + 1,
+        'स्टूडेंट ID': student.s_id || 'N/A',
+        'नाम': student.s_name || 'N/A',
+        'पिता का नाम': student.s_father || 'N/A',
+        'माता का नाम': student.s_mother || 'N/A',
+        'मोबाइल नंबर': student.s_mobile || 'N/A',
+        'जन्म तिथि': student.s_dob || 'N/A',
+        'उम्र': student.s_age || 'N/A',
+        'लिंग': getGenderLabel(student.s_gender),
+        'पता': student.s_address || 'N/A',
+        'वजन': student.s_weight || 'N/A',
+        'ऊंचाई': student.s_height || 'N/A',
+        'स्वास्थ्य स्थिति': getHealthStatusLabel(student.s_healtha_status),
+        'परियोजना': student.pariyojna_name || 'N/A',
+        'सेक्टर': student.sector_name || 'N/A',
+        'केंद्र': student.kendra_name || 'N/A'
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths for better visibility
+      const columnWidths = [
+        { wch: 8 },   // क्रम संख्या
+        { wch: 12 },  // स्टूडेंट ID
+        { wch: 20 },  // नाम
+        { wch: 20 },  // पिता का नाम
+        { wch: 20 },  // माता का नाम
+        { wch: 15 },  // मोबाइल नंबर
+        { wch: 12 },  // जन्म तिथि
+        { wch: 8 },   // उम्र
+        { wch: 8 },   // लिंग
+        { wch: 30 },  // पता
+        { wch: 10 },  // वजन
+        { wch: 10 },  // ऊंचाई
+        { wch: 15 },  // स्वास्थ्य स्थिति
+        { wch: 20 },  // परियोजना
+        { wch: 15 },  // सेक्टर
+        { wch: 20 },  // केंद्र
+        { wch: 30 },  // केंद्र पता
+        { wch: 15 },  // रिकॉर्ड तारीख
+        { wch: 15 }   // अपडेट तारीख
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Students Data');
+
+      // Generate filename with current date and filters
+      const currentDate = new Date().toLocaleDateString('hi-IN').replace(/\//g, '-');
+      const activeFilters = [];
+      if (filters.sp_id) activeFilters.push('Project');
+      if (filters.ss_id) activeFilters.push('Sector');
+      if (filters.sk_id) activeFilters.push('Kendra');
+      if (filters.s_healtha_status) activeFilters.push('Health');
+      if (searchTerm) activeFilters.push('Search');
+      
+      const filterText = activeFilters.length > 0 ? `_Filtered_${activeFilters.join('_')}` : '_All';
+      const filename = `HarGhar_Students_${currentDate}${filterText}.xlsx`;
+
+      // Export file
+      XLSX.writeFile(workbook, filename);
+
+      // Show success message (you can replace this with your preferred notification method)
+      alert(`✅ Excel file exported successfully!\n📁 File: ${filename}\n📊 Records: ${filteredStudents.length}`);
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      alert('❌ Error exporting to Excel. Please try again.');
+    }
+  };
+
   // Update info box data to use API stats
   const infoBoxData = [
     {
@@ -492,6 +570,22 @@ const StudentStats = ({ onLogout }) => {
     }
   };
 
+  const getGenderLabel = (gender) => {
+    switch(gender) {
+      case 'Male': return 'पुरुष';
+      case 'Female': return 'महिला';
+      default: return gender || 'N/A';
+    }
+  };
+
+  const getGenderIcon = (gender) => {
+    switch(gender) {
+      case 'Male': return <User size={16} color="#1e293b" />;
+      case 'Female': return <User size={16} color="#1e293b" />;
+      default: return <User size={16} color="#1e293b" />;
+    }
+  };
+
   if (loading) {
     return (
       <div className="student-stats-container">
@@ -617,7 +711,7 @@ const StudentStats = ({ onLogout }) => {
                   gap: '8px',
                   fontSize: '14px',
                   fontWeight: '500',
-                  marginRight: '16px',
+                  marginRight: '12px',
                   transition: 'all 0.3s ease',
                   opacity: loading ? 0.7 : 1
                 }}
@@ -634,6 +728,45 @@ const StudentStats = ({ onLogout }) => {
               >
                 <RotateCcw className={`w-4 h-4 ${loading ? 'spin' : ''}`} />
                 {loading ? 'रीफ्रेश हो रहा है...' : 'रीफ्रेश करें'}
+              </button>
+
+              <button 
+                onClick={exportToExcel}
+                className="export-btn"
+                disabled={loading || filteredStudents.length === 0}
+                title={`${filteredStudents.length} रिकॉर्ड्स को Excel में एक्सपोर्ट करें`}
+                style={{
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  cursor: (loading || filteredStudents.length === 0) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginRight: '16px',
+                  transition: 'all 0.3s ease',
+                  opacity: (loading || filteredStudents.length === 0) ? 0.5 : 1,
+                  boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading && filteredStudents.length > 0) {
+                    e.target.style.background = 'linear-gradient(135deg, #047857, #059669)';
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(5, 150, 105, 0.3)';
+                }}
+              >
+                <Download className="w-4 h-4" />
+                Excel Export ({filteredStudents.length})
               </button>
               <div className="student-stats-status">
                 <span className="student-status-dot">●</span>
@@ -1575,6 +1708,34 @@ const StudentStats = ({ onLogout }) => {
                         }}>
                           <Calendar size={14} color="#1e293b" />
                           {selectedStudent.s_age} साल
+                        </span>
+                      </div>
+                      
+                      <div style={{ 
+                        background: '#f8fafc', 
+                        padding: '16px', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <label style={{ 
+                          fontWeight: 600, 
+                          color: '#64748b', 
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          display: 'block',
+                          marginBottom: '4px'
+                        }}>लिंग</label>
+                        <span style={{ 
+                          color: '#1e293b', 
+                          fontSize: '16px',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}>
+                          {getGenderIcon(selectedStudent.s_gender)}
+                          {getGenderLabel(selectedStudent.s_gender)}
                         </span>
                       </div>
                     </div>

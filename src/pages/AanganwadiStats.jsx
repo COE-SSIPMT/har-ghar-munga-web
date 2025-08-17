@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Plus, Eye, Edit, Building2, MapPin, User, Phone, Calendar, Check, AlertCircle, X, BarChart3, RotateCcw } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Building2, MapPin, User, Users, Phone, Calendar, Check, AlertCircle, X, BarChart3, RotateCcw, Download, Lock } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import '../styles/unified.css';
 import serverURL from './server';
 
@@ -415,6 +416,144 @@ const AanganwadiStats = ({ onLogout }) => {
     }
   };
 
+  // Excel Export Function
+  const exportToExcel = async () => {
+    try {
+      // Show loading state
+      const exportBtn = document.querySelector('.export-btn');
+      if (exportBtn) {
+        exportBtn.textContent = 'Exporting...';
+        exportBtn.disabled = true;
+      }
+
+      // First, get total count for filtered data
+      const statsParams = new URLSearchParams();
+      statsParams.append('action', 'get_stats');
+      if (filters.kp_id) statsParams.append('kp_id', filters.kp_id);
+      if (filters.ks_id) statsParams.append('ks_id', filters.ks_id);
+      if (searchTerm.trim()) statsParams.append('search', searchTerm.trim());
+
+      const statsResponse = await fetch(`${serverURL}api_kendras.php?${statsParams}`);
+      const statsData = await statsResponse.json();
+      
+      if (!statsData.success) {
+        throw new Error('Failed to get total count');
+      }
+
+      const totalRecords = statsData.data.totalKendras;
+      
+      if (totalRecords === 0) {
+        alert('⚠️ No data found to export');
+        return;
+      }
+
+      // Now fetch all pages of data
+      let allKendras = [];
+      let currentPage = 1;
+      const limitPerPage = 100; // API maximum
+      const totalPages = Math.ceil(totalRecords / limitPerPage);
+
+      // Show progress in button text
+      for (let page = 1; page <= totalPages; page++) {
+        if (exportBtn) {
+          exportBtn.textContent = `Exporting... ${page}/${totalPages}`;
+        }
+
+        const params = new URLSearchParams();
+        params.append('page', page);
+        params.append('limit', limitPerPage);
+        
+        // Apply same filters as current view
+        if (filters.kp_id) params.append('kp_id', filters.kp_id);
+        if (filters.ks_id) params.append('ks_id', filters.ks_id);
+        if (searchTerm.trim()) params.append('search', searchTerm.trim());
+
+        const response = await fetch(`${serverURL}api_kendras.php?${params}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to fetch export data');
+        }
+
+        const pageData = data.data || [];
+        allKendras = [...allKendras, ...pageData];
+        
+        // If we got fewer records than expected, we've reached the end
+        if (pageData.length < limitPerPage && page < totalPages) {
+          break;
+        }
+      }
+
+      // Prepare data for export with Hindi headers
+      const exportData = allKendras.map((kendra, index) => ({
+        'क्रम संख्या': index + 1,
+        'केंद्र ID': kendra.k_id || 'N/A',
+        'केंद्र का नाम': kendra.k_name || 'N/A',
+        'केंद्र का पता': kendra.k_address || 'N/A',
+        'परियोजना': getPariyojnaName(kendra.kp_id) || 'N/A',
+        'सेक्टर': getSectorName(kendra.ks_id) || 'N/A',
+        'लॉगिन ID': kendra.login_id || 'N/A',
+        'कुल छात्र': kendra.total_students || 0,
+        'सक्रिय छात्र': kendra.active_students || 0,
+        'छात्र गतिविधि %': kendra.total_students > 0 ? 
+          Math.round((kendra.active_students / kendra.total_students) * 100) + '%' : '0%',
+        'स्थिति': kendra.active_students > 0 ? 'सक्रिय' : 'निष्क्रिय'
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths for better visibility
+      const columnWidths = [
+        { wch: 8 },   // क्रम संख्या
+        { wch: 10 },  // केंद्र ID
+        { wch: 25 },  // केंद्र का नाम
+        { wch: 40 },  // केंद्र का पता
+        { wch: 20 },  // परियोजना
+        { wch: 15 },  // सेक्टर
+        { wch: 15 },  // लॉगिन ID
+        { wch: 12 },  // कुल छात्र
+        { wch: 12 },  // सक्रिय छात्र
+        { wch: 15 },  // छात्र गतिविधि %
+        { wch: 12 },  // स्थिति
+        { wch: 15 },  // रिकॉर्ड तारीख
+        { wch: 15 }   // अपडेट तारीख
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Kendra Data');
+
+      // Generate filename with current date and filters
+      const currentDate = new Date().toLocaleDateString('hi-IN').replace(/\//g, '-');
+      const activeFilters = [];
+      if (filters.kp_id) activeFilters.push('Project');
+      if (filters.ks_id) activeFilters.push('Sector');
+      if (searchTerm) activeFilters.push('Search');
+      
+      const filterText = activeFilters.length > 0 ? `_Filtered_${activeFilters.join('_')}` : '_All';
+      const filename = `HarGhar_Kendras_${currentDate}${filterText}.xlsx`;
+
+      // Export file
+      XLSX.writeFile(workbook, filename);
+
+      // Show success message with detailed info
+      alert(`✅ Excel file exported successfully!\n📁 File: ${filename}\n📊 Total Records: ${allKendras.length}\n🔍 Applied Filters: ${activeFilters.length > 0 ? activeFilters.join(', ') : 'None'}`);
+
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      alert('❌ Error exporting to Excel. Please try again.');
+    } finally {
+      // Restore button state
+      const exportBtn = document.querySelector('.export-btn');
+      if (exportBtn) {
+        exportBtn.textContent = `Excel Export (${filteredKendras.length})`;
+        exportBtn.disabled = loading || filteredKendras.length === 0;
+      }
+    }
+  };
+
   const getActivityColor = (active, total) => {
     if (total === 0) return '#9ca3af';
     const percentage = (active / total) * 100;
@@ -467,7 +606,7 @@ const AanganwadiStats = ({ onLogout }) => {
                   gap: '8px',
                   fontSize: '14px',
                   fontWeight: '500',
-                  marginRight: '16px',
+                  marginRight: '12px',
                   transition: 'all 0.3s ease',
                   opacity: loading ? 0.7 : 1
                 }}
@@ -484,6 +623,45 @@ const AanganwadiStats = ({ onLogout }) => {
               >
                 <RotateCcw className={`w-4 h-4 ${loading ? 'spin' : ''}`} />
                 {loading ? 'रीफ्रेश हो रहा है...' : 'रीफ्रेश करें'}
+              </button>
+
+              <button 
+                onClick={exportToExcel}
+                className="export-btn"
+                disabled={loading || filteredKendras.length === 0}
+                title={`${filteredKendras.length} केंद्र रिकॉर्ड्स को Excel में एक्सपोर्ट करें`}
+                style={{
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  cursor: (loading || filteredKendras.length === 0) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginRight: '16px',
+                  transition: 'all 0.3s ease',
+                  opacity: (loading || filteredKendras.length === 0) ? 0.5 : 1,
+                  boxShadow: '0 2px 8px rgba(5, 150, 105, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading && filteredKendras.length > 0) {
+                    e.target.style.background = 'linear-gradient(135deg, #047857, #059669)';
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(5, 150, 105, 0.3)';
+                }}
+              >
+                <Download className="w-4 h-4" />
+                Excel Export
               </button>
               <div className="student-stats-status">
                 <span className="student-status-dot">●</span>
@@ -764,7 +942,7 @@ const AanganwadiStats = ({ onLogout }) => {
                 justifyContent: 'center',
                 fontSize: '20px'
               }}>
-                🏥
+                <Building2 size={20} color="#ffffff" />
               </div>
               <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b', margin: 0 }}>केंद्र सूची</h3>
             </div>
@@ -831,7 +1009,8 @@ const AanganwadiStats = ({ onLogout }) => {
                     fontWeight: 600,
                     marginBottom: '16px'
                   }}>
-                    🔄 डेटा लोड हो रहा है...
+                    <RotateCcw size={16} className="inline-block mr-2" />
+                    डेटा लोड हो रहा है...
                   </div>
                   <div style={{
                     width: '40px',
@@ -894,7 +1073,8 @@ const AanganwadiStats = ({ onLogout }) => {
                         color: '#64748b',
                         fontWeight: 500
                       }}>
-                        🔐 {kendra.login_id}
+                        <Lock size={12} className="inline-block mr-1" />
+                        {kendra.login_id}
                       </div>
                     </div>
 
@@ -910,7 +1090,8 @@ const AanganwadiStats = ({ onLogout }) => {
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical'
                     }}>
-                      📍 {kendra.pariyojna_name},{kendra.sector_name},{kendra.k_name}
+                      <MapPin size={14} className="inline-block mr-1" />
+                      {kendra.pariyojna_name},{kendra.sector_name},{kendra.k_name}
                     </div>
 
                     {/* Project Column */}
@@ -959,9 +1140,9 @@ const AanganwadiStats = ({ onLogout }) => {
                       fontWeight: 500,
                       textAlign: 'center'
                     }}>
-                      <div>📅 {new Date(kendra.k_createdAt).toLocaleDateString('hi-IN')}</div>
+                      <div><Calendar size={12} className="inline-block mr-1" />{new Date(kendra.k_createdAt).toLocaleDateString('hi-IN')}</div>
                       <div style={{ marginTop: '2px', fontSize: '11px' }}>
-                        🔄 {new Date(kendra.k_updatedAt).toLocaleDateString('hi-IN')}
+                        <RotateCcw size={10} className="inline-block mr-1" />{new Date(kendra.k_updatedAt).toLocaleDateString('hi-IN')}
                       </div>
                     </div>
 
@@ -991,14 +1172,7 @@ const AanganwadiStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}
-                        onMouseOver={(e) => {
-                          e.target.style.transform = 'translateY(-2px)';
-                          e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
-                        }}
-                        onMouseOut={(e) => {
-                          e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = 'none';
-                        }}
+                        className="action-btn action-btn-view"
                         title="विवरण देखें"
                       >
                         <Eye size={14} />
@@ -1031,14 +1205,7 @@ const AanganwadiStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}
-                        onMouseOver={(e) => {
-                          e.target.style.transform = 'translateY(-2px)';
-                          e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
-                        }}
-                        onMouseOut={(e) => {
-                          e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = 'none';
-                        }}
+                        className="action-btn action-btn-edit"
                         title="संपादित करें"
                       >
                         <Edit size={14} />
@@ -1060,14 +1227,7 @@ const AanganwadiStats = ({ onLogout }) => {
                           alignItems: 'center',
                           gap: '4px'
                         }}
-                        onMouseOver={(e) => {
-                          e.target.style.transform = 'translateY(-2px)';
-                          e.target.style.boxShadow = '0 8px 25px rgba(22, 163, 74, 0.4)';
-                        }}
-                        onMouseOut={(e) => {
-                          e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = 'none';
-                        }}
+                        className="action-btn action-btn-student"
                         title="छात्र देखें"
                       >
                         <User size={14} />
@@ -1144,7 +1304,7 @@ const AanganwadiStats = ({ onLogout }) => {
                 </div>
 
                 {/* Page Size Selector */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 500 }}>
                     प्रति पृष्ठ:
                   </span>
@@ -1167,7 +1327,7 @@ const AanganwadiStats = ({ onLogout }) => {
                     <option value={20}>20</option>
                     <option value={50}>50</option>
                   </select>
-                </div>
+                </div> */}
 
                 {/* Page Navigation */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1348,7 +1508,7 @@ const AanganwadiStats = ({ onLogout }) => {
                     justifyContent: 'center',
                     fontSize: '18px'
                   }}>
-                    🏥
+                    <Building2 size={18} color="white" />
                   </span>
                   केंद्र विवरण
                 </h2>
@@ -1419,12 +1579,18 @@ const AanganwadiStats = ({ onLogout }) => {
                       </div>
                       <div>
                         <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>लॉगिन आईडी</label>
-                        <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>🔐 {selectedKendra.login_id}</div>
+                        <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>
+                          <Lock size={16} className="inline-block mr-2" />
+                          {selectedKendra.login_id}
+                        </div>
                       </div>
                     </div>
                     <div>
                       <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>विवरण</label>
-                      <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>📍 {selectedKendra.pariyojna_name},{selectedKendra.sector_name},{selectedKendra.k_name}</div>
+                      <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>
+                        <MapPin size={16} className="inline-block mr-2" />
+                        {selectedKendra.pariyojna_name},{selectedKendra.sector_name},{selectedKendra.k_name}
+                      </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div>
@@ -1477,7 +1643,8 @@ const AanganwadiStats = ({ onLogout }) => {
                     alignItems: 'center',
                     gap: '8px'
                   }}>
-                    👥 छात्र सांख्यिकी
+                    <Users size={18} className="inline-block mr-2" />
+                    छात्र सांख्यिकी
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', textAlign: 'center' }}>
                     <div style={{
@@ -1558,7 +1725,8 @@ const AanganwadiStats = ({ onLogout }) => {
                     color: '#1e293b',
                     margin: '0 0 12px 0'
                   }}>
-                    📅 समय विवरण
+                    <Calendar size={16} className="inline-block mr-2" />
+                    समय विवरण
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div>
@@ -1635,7 +1803,7 @@ const AanganwadiStats = ({ onLogout }) => {
                     justifyContent: 'center',
                     fontSize: '18px'
                   }}>
-                    ✏️
+                    <Edit size={18} color="white" />
                   </span>
                   केंद्र संपादित करें
                 </h2>
@@ -2049,7 +2217,7 @@ const AanganwadiStats = ({ onLogout }) => {
                     justifyContent: 'center',
                     fontSize: '18px'
                   }}>
-                    🏥
+                    <Building2 size={18} color="white" />
                   </span>
                   नया केंद्र जोड़ें
                 </h2>
