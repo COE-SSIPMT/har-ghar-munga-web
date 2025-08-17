@@ -1376,6 +1376,12 @@ button span, button span * {
   font-weight: 500;
 }
 
+.student-stats-status-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .student-stats-status {
   display: flex;
   align-items: center;
@@ -2020,3 +2026,17 @@ button span, button span * {
 .shadow-md { box-shadow: var(--shadow-md); }
 .shadow-lg { box-shadow: var(--shadow-lg); }
 .shadow-xl { box-shadow: var(--shadow-xl); }
+
+/* Spin Animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

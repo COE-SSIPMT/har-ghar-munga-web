@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home, Camera, Image, Download } from 'lucide-react';
+import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home, Camera, Image, Download, RotateCcw } from 'lucide-react';
+import serverURL from './server';
 import '../styles/unified.css';
 
 const StudentStats = ({ onLogout }) => {
@@ -13,7 +14,6 @@ const StudentStats = ({ onLogout }) => {
     s_age: ''
   });
 
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
@@ -22,224 +22,222 @@ const StudentStats = ({ onLogout }) => {
   const [editingStudent, setEditingStudent] = useState(null);
   const [editFormData, setEditFormData] = useState({});
 
-  // Sample data based on master_student schema
-  const students = [
-    {
-      s_id: 285,
-      sp_id: 1,
-      ss_id: 2,
-      sk_id: 15,
-      s_name: 'जया मानिकपुरी',
-      s_mobile: 8602214560,
-      s_father: 'रामेश कुमार',
-      s_mother: 'सुनीता देवी',
-      s_height: '95 cm',
-      s_weight: '14.5 kg',
-      s_age: 3,
-      s_dob: '2022-01-15',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'वार्ड 12, नयागांव, धरसीवा',
-      pariyojna_name: 'पोषण आहार',
-      sector_name: 'ग्रामीण',
-      kendra_name: 'CHC RAIPUR'
-    },
-    {
-      s_id: 284,
-      sp_id: 1,
-      ss_id: 2,
-      sk_id: 15,
-      s_name: 'मनीषा सवारा',
-      s_mobile: 9244832337,
-      s_father: 'अनिल शर्मा',
-      s_mother: 'रीता शर्मा',
-      s_height: '98 cm',
-      s_weight: '15.2 kg',
-      s_age: 4,
-      s_dob: '2021-05-20',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'मुख्य रोड, रामपुर, अरंग',
-      pariyojna_name: 'पोषण आहार',
-      sector_name: 'ग्रामीण',
-      kendra_name: 'CHC RAIPUR'
-    },
-    {
-      s_id: 283,
-      sp_id: 2,
-      ss_id: 1,
-      sk_id: 12,
-      s_name: 'अंजली चेलक',
-      s_mobile: 9238189517,
-      s_father: 'विजय सिंह',
-      s_mother: 'कमला देवी',
-      s_height: '102 cm',
-      s_weight: '16.8 kg',
-      s_age: 4,
-      s_dob: '2021-03-10',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'टोला नंबर 5, शिवपुर, अरंग',
-      pariyojna_name: 'स्वास्थ्य सेवा',
-      sector_name: 'शहरी',
-      kendra_name: 'आंगनवाड़ी केंद्र 12'
-    },
-    {
-      s_id: 282,
-      sp_id: 1,
-      ss_id: 2,
-      sk_id: 15,
-      s_name: 'पायल पटेल',
-      s_mobile: 6260202235,
-      s_father: 'राम लाल पटेल',
-      s_mother: 'गीता देवी',
-      s_height: '89 cm',
-      s_weight: '12.3 kg',
-      s_age: 2,
-      s_dob: '2022-11-05',
-      s_healtha_status: 'सामान्य',
-      s_address: 'पटेल नगर, वार्ड 8, अरंग',
-      pariyojna_name: 'पोषण आहार',
-      sector_name: 'ग्रामीण',
-      kendra_name: 'CHC RAIPUR'
-    },
-    {
-      s_id: 281,
-      sp_id: 3,
-      ss_id: 2,
-      sk_id: 18,
-      s_name: 'हिरौंदी साहू',
-      s_mobile: 9617722218,
-      s_father: 'सुरेश साहू',
-      s_mother: 'सुमित्रा साहू',
-      s_height: '105 cm',
-      s_weight: '18.1 kg',
-      s_age: 5,
-      s_dob: '2020-08-12',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'साहू टोला, मुख्य गांव, अरंग',
-      pariyojna_name: 'शिक्षा कार्यक्रम',
-      sector_name: 'ग्रामीण',
-      kendra_name: 'प्राथमिक स्वास्थ्य केंद्र 18'
-    },
-    {
-      s_id: 280,
-      sp_id: 1,
-      ss_id: 1,
-      sk_id: 10,
-      s_name: 'जगेश्वरी टंडन',
-      s_mobile: 8253091771,
-      s_father: 'अजय टंडन',
-      s_mother: 'प्रिया टंडन',
-      s_height: '100 cm',
-      s_weight: '16.5 kg',
-      s_age: 4,
-      s_dob: '2021-02-28',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'टंडन वार्ड, सेक्टर 3, अरंग',
-      pariyojna_name: 'पोषण आहार',
-      sector_name: 'शहरी',
-      kendra_name: 'शहरी आंगनवाड़ी 10'
-    },
-    {
-      s_id: 279,
-      sp_id: 2,
-      ss_id: 2,
-      sk_id: 15,
-      s_name: 'ईश्वरी यादव',
-      s_mobile: 9171286949,
-      s_father: 'मुकेश यादव',
-      s_mother: 'रेखा यादव',
-      s_height: '92 cm',
-      s_weight: '13.8 kg',
-      s_age: 3,
-      s_dob: '2022-04-18',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'यादव टोला, ग्राम पंचायत, अरंग',
-      pariyojna_name: 'स्वास्थ्य सेवा',
-      sector_name: 'ग्रामीण',
-      kendra_name: 'CHC RAIPUR'
-    },
-    {
-      s_id: 278,
-      sp_id: 1,
-      ss_id: 2,
-      sk_id: 20,
-      s_name: 'शशि धीवर',
-      s_mobile: 7354894598,
-      s_father: 'रामू धीवर',
-      s_mother: 'सीता धीवर',
-      s_height: '87 cm',
-      s_weight: '11.9 kg',
-      s_age: 2,
-      s_dob: '2023-01-22',
-      s_healtha_status: 'कमज़ोर',
-      s_address: 'धीवर गांव, तालाब के पास, अरंग',
-      pariyojna_name: 'पोषण आहार',
-      sector_name: 'ग्रामीण',
-      kendra_name: 'ग्रामीण स्वास्थ्य केंद्र 20'
-    },
-    {
-      s_id: 277,
-      sp_id: 3,
-      ss_id: 1,
-      sk_id: 8,
-      s_name: 'पल्लवी तांडन',
-      s_mobile: 7049534595,
-      s_father: 'राकेश तांडन',
-      s_mother: 'माला तांडन',
-      s_height: '110 cm',
-      s_weight: '20.2 kg',
-      s_age: 5,
-      s_dob: '2020-06-30',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'तांडन नगर, कॉलोनी रोड, धरसीवा',
-      pariyojna_name: 'शिक्षा कार्यक्रम',
-      sector_name: 'शहरी',
-      kendra_name: 'प्री-स्कूल केंद्र 8'
-    },
-    {
-      s_id: 276,
-      sp_id: 2,
-      ss_id: 2,
-      sk_id: 22,
-      s_name: 'श्याम काली कोल',
-      s_mobile: 6262549671,
-      s_father: 'हरि कोल',
-      s_mother: 'राधा कोल',
-      s_height: '96 cm',
-      s_weight: '14.8 kg',
-      s_age: 3,
-      s_dob: '2022-02-14',
-      s_healtha_status: 'स्वस्थ',
-      s_address: 'कोल बस्ती, पहाड़ी इलाका, धरसीवा',
-      pariyojna_name: 'स्वास्थ्य सेवा',
-      sector_name: 'ग्रामीण',
-      kendra_name: 'पहाड़ी स्वास्थ्य केंद्र 22'
+  // API State
+  const [students, setStudents] = useState([]);
+  const [filterOptions, setFilterOptions] = useState({
+    pariyojna: [],
+    sector: [],
+    kendra: [],
+    health_status: []
+  });
+  const [stats, setStats] = useState({
+    total_students: 0,
+    healthy_students: 0,
+    weak_students: 0,
+    active_records: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [studentsPerPage] = useState(10);
+
+  // Search debouncing
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchFilterOptions();
+    fetchStudents();
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    fetchStudents();
+    fetchStats();
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [filters, searchTerm]);
+
+  // Debounce search input
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      setSearchTerm(searchInput);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchInput]);
+
+  // API Functions
+  const fetchFilterOptions = async () => {
+    try {
+      const response = await fetch(`${serverURL}hgm_student_web.php?action=get_filters`);
+      
+      // Check if response is ok and content-type is JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setFilterOptions(result.data);
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError('Error fetching filter options: ' + err.message);
+      console.error('Filter fetch error:', err);
     }
-  ];
+  };
 
-  // Sample data for dropdowns based on foreign key tables
-  const pariyojnaOptions = [
-    { p_id: 1, p_name: 'पोषण आहार' },
-    { p_id: 2, p_name: 'स्वास्थ्य सेवा' },
-    { p_id: 3, p_name: 'शिक्षा कार्यक्रम' }
-  ];
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        action: 'get_students',
+        ...filters,
+        search: searchTerm
+      });
+      
+      const response = await fetch(`${serverURL}hgm_student_web.php?${params}`);
+      
+      // Check if response is ok and content-type is JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setStudents(result.data);
+        setError(null);
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError('Error fetching students: ' + err.message);
+      console.error('Students fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const sectorOptions = [
-    { s_id: 1, sp_id: 1, s_name: 'शहरी' },
-    { s_id: 2, sp_id: 1, s_name: 'ग्रामीण' },
-    { s_id: 3, sp_id: 2, s_name: 'अर्ध-शहरी' }
-  ];
+  const fetchStats = async () => {
+    try {
+      const params = new URLSearchParams({
+        action: 'get_stats',
+        ...filters,
+        search: searchTerm
+      });
+      
+      const response = await fetch(`${serverURL}hgm_student_web.php?${params}`);
+      
+      // Check if response is ok and content-type is JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setStats(result.data);
+      } else {
+        console.error('Error fetching stats:', result.message);
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err.message);
+    }
+  };
 
-  const kendraOptions = [
-    { k_id: 8, ks_id: 1, kp_id: 3, k_name: 'प्री-स्कूल केंद्र 8' },
-    { k_id: 10, ks_id: 1, kp_id: 1, k_name: 'शहरी आंगनवाड़ी 10' },
-    { k_id: 12, ks_id: 1, kp_id: 2, k_name: 'आंगनवाड़ी केंद्र 12' },
-    { k_id: 15, ks_id: 2, kp_id: 1, k_name: 'CHC RAIPUR' },
-    { k_id: 18, ks_id: 2, kp_id: 3, k_name: 'प्राथमिक स्वास्थ्य केंद्र 18' },
-    { k_id: 20, ks_id: 2, kp_id: 1, k_name: 'ग्रामीण स्वास्थ्य केंद्र 20' },
-    { k_id: 22, ks_id: 2, kp_id: 2, k_name: 'पहाड़ी स्वास्थ्य केंद्र 22' }
-  ];
+  const fetchStudentDetails = async (studentId) => {
+    try {
+      const response = await fetch(`${serverURL}hgm_student_web.php?action=get_student_details&student_id=${studentId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err) {
+      console.error('Student details fetch error:', err);
+      throw err;
+    }
+  };
 
-  const healthStatusOptions = ['स्वस्थ', 'कमज़ोर', 'बीमार', 'सामान्य'];
+  const fetchStudentPhotos = async (studentId) => {
+    try {
+      const response = await fetch(`${serverURL}hgm_student_web.php?action=get_student_photos&student_id=${studentId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err) {
+      console.error('Student photos fetch error:', err);
+      throw err;
+    }
+  };
+
+  const updateStudent = async (studentData) => {
+    try {
+      const response = await fetch(`${serverURL}hgm_student_web.php?action=update_student`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(studentData)
+      });
+      
+      // Check if response is ok and content-type is JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned non-JSON response');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        return true;
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err) {
+      console.error('Student update error:', err);
+      throw err;
+    }
+  };
 
   const handleFilterChange = (e) => {
     setFilters({
@@ -249,59 +247,73 @@ const StudentStats = ({ onLogout }) => {
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    setSearchInput(e.target.value);
   };
 
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = student.s_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.s_father.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.s_mother.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.kendra_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.s_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.s_healtha_status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.pariyojna_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.sector_name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilters = 
-      (!filters.sp_id || student.sp_id.toString() === filters.sp_id) &&
-      (!filters.ss_id || student.ss_id.toString() === filters.ss_id) &&
-      (!filters.sk_id || student.sk_id.toString() === filters.sk_id) &&
-      (!filters.s_healtha_status || student.s_healtha_status === filters.s_healtha_status) &&
-      (!filters.s_age || student.s_age.toString() === filters.s_age);
-    
-    return matchesSearch && matchesFilters;
-  });
+  const clearAllFilters = () => {
+    setFilters({
+      sp_id: '',
+      ss_id: '',
+      sk_id: '',
+      s_healtha_status: '',
+      s_age: ''
+    });
+    setSearchInput('');
+    setSearchTerm('');
+    setCurrentPage(1);
+  };
 
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchFilterOptions(),
+        fetchStudents(),
+        fetchStats()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update info box data to use API stats
   const infoBoxData = [
     {
       title: 'कुल बच्चे',
-      count: filteredStudents.length.toString(),
+      count: stats.total_students?.toString() || '0',
       icon: <User size={24} />,
       color: 'blue'
     },
     {
       title: 'स्वस्थ बच्चे',
-      count: filteredStudents.filter(s => s.s_healtha_status === 'स्वस्थ').length.toString(),
+      count: stats.healthy_students?.toString() || '0',
       icon: <Activity size={24} />,
       color: 'green'
     },
     {
       title: 'कमज़ोर बच्चे',
-      count: filteredStudents.filter(s => s.s_healtha_status === 'कमज़ोर').length.toString(),
+      count: stats.weak_students?.toString() || '0',
       icon: <AlertTriangle size={24} />,
       color: 'brown'
     },
     {
       title: 'सक्रिय रिकॉर्ड',
-      count: filteredStudents.length.toString(),
+      count: stats.active_records?.toString() || '0',
       icon: <FileText size={24} />,
       color: 'light-brown'
     }
   ];
 
-  const openModal = (student) => {
-    setSelectedStudent(student);
-    setShowModal(true);
+  const openModal = async (student) => {
+    try {
+      const detailedStudent = await fetchStudentDetails(student.s_id);
+      setSelectedStudent(detailedStudent);
+      setShowModal(true);
+    } catch (err) {
+      alert('Error loading student details: ' + err.message);
+    }
   };
 
   const closeModal = () => {
@@ -309,19 +321,17 @@ const StudentStats = ({ onLogout }) => {
     setSelectedStudent(null);
   };
 
-  const openPhotoModal = (student) => {
-    // Sample photo data - यहाँ backend से photos आएंगी
-    const photoData = {
-      distribution_photo: `https://via.placeholder.com/400x300/22c55e/ffffff?text=Distribution+Photo+${student.s_id}`,
-      certificate_photo: `https://via.placeholder.com/400x300/f59e0b/ffffff?text=Certificate+Photo+${student.s_id}`,
-      plant_photo: `https://via.placeholder.com/400x300/3b82f6/ffffff?text=Latest+Plant+Photo+${student.s_id}`
-    };
-    
-    setSelectedStudentPhotos({
-      student: student,
-      photos: photoData
-    });
-    setShowPhotoModal(true);
+  const openPhotoModal = async (student) => {
+    try {
+      const photos = await fetchStudentPhotos(student.s_id);
+      setSelectedStudentPhotos({
+        student,
+        photos
+      });
+      setShowPhotoModal(true);
+    } catch (err) {
+      alert('Error loading student photos: ' + err.message);
+    }
   };
 
   const closePhotoModal = () => {
@@ -329,25 +339,15 @@ const StudentStats = ({ onLogout }) => {
     setSelectedStudentPhotos(null);
   };
 
-  const openEditModal = (student) => {
-    setEditingStudent(student);
-    setEditFormData({
-      s_id: student.s_id,
-      sp_id: student.sp_id,
-      ss_id: student.ss_id,
-      sk_id: student.sk_id,
-      s_name: student.s_name,
-      s_mobile: student.s_mobile,
-      s_father: student.s_father,
-      s_mother: student.s_mother,
-      s_height: student.s_height,
-      s_weight: student.s_weight,
-      s_age: student.s_age,
-      s_dob: student.s_dob,
-      s_healtha_status: student.s_healtha_status,
-      s_address: student.s_address
-    });
-    setShowEditModal(true);
+  const openEditModal = async (student) => {
+    try {
+      const detailedStudent = await fetchStudentDetails(student.s_id);
+      setEditingStudent(detailedStudent);
+      setEditFormData(detailedStudent);
+      setShowEditModal(true);
+    } catch (err) {
+      alert('Error loading student for editing: ' + err.message);
+    }
   };
 
   const closeEditModal = () => {
@@ -357,52 +357,166 @@ const StudentStats = ({ onLogout }) => {
   };
 
   const handleEditFormChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setEditFormData({
+      ...editFormData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    // यहाँ API call करके database में update करेंगे
-    console.log('Updating student:', editFormData);
-    alert('✅ स्टूडेंट की जानकारी सफलतापूर्वक अपडेट हो गई!');
-    closeEditModal();
+    try {
+      await updateStudent(editFormData);
+      alert('छात्र की जानकारी सफलतापूर्वक अपडेट की गई');
+      closeEditModal();
+      fetchStudents(); // Refresh the student list
+    } catch (err) {
+      alert('Error updating student: ' + err.message);
+    }
   };
 
-  // Filter sectors based on selected pariyojna
+  // Filter functions for dropdowns
   const getFilteredSectors = (selectedPariyojnaId) => {
-    return sectorOptions.filter(sector => sector.sp_id === parseInt(selectedPariyojnaId));
+    if (!selectedPariyojnaId || !filterOptions.sector) return filterOptions.sector;
+    return filterOptions.sector.filter(sector => sector.sp_id == selectedPariyojnaId);
   };
 
-  // Filter kendras based on selected sector and pariyojna
   const getFilteredKendras = (selectedSectorId, selectedPariyojnaId) => {
-    return kendraOptions.filter(kendra => 
-      kendra.ks_id === parseInt(selectedSectorId) && 
-      kendra.kp_id === parseInt(selectedPariyojnaId)
-    );
+    if (!filterOptions.kendra) return [];
+    
+    let filtered = filterOptions.kendra;
+    
+    if (selectedSectorId) {
+      filtered = filtered.filter(kendra => kendra.ks_id == selectedSectorId);
+    }
+    
+    if (selectedPariyojnaId) {
+      filtered = filtered.filter(kendra => kendra.kp_id == selectedPariyojnaId);
+    }
+    
+    return filtered;
   };
 
   const getHealthStatusColor = (status) => {
-    switch (status) {
-      case 'स्वस्थ': return '#10b981';
-      case 'सामान्य': return '#0ea5e9';
-      case 'कमज़ोर': return '#f59e0b';
-      case 'बीमार': return '#ef4444';
+    switch(status) {
+      case 'healthy': return '#10b981';
+      case 'weak': return '#f59e0b';
+      case 'sick': return '#ef4444';
+      case 'normal': return '#3b82f6';
       default: return '#6b7280';
     }
   };
 
   const getHealthStatusBg = (status) => {
-    switch (status) {
-      case 'स्वस्थ': return '#dcfce7';
-      case 'सामान्य': return '#dbeafe';
-      case 'कमज़ोर': return '#fef3c7';
-      case 'बीमार': return '#fee2e2';
+    switch(status) {
+      case 'healthy': return '#ecfdf5';
+      case 'weak': return '#fef3c7';
+      case 'sick': return '#fee2e2';
+      case 'normal': return '#dbeafe';
       default: return '#f3f4f6';
     }
+  };
+
+  const getHealthStatusLabel = (status) => {
+    switch(status) {
+      case 'healthy': return 'स्वस्थ';
+      case 'weak': return 'कमज़ोर';
+      case 'sick': return 'बीमार';
+      case 'normal': return 'सामान्य';
+      default: return status;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="student-stats-container">
+        <Sidebar onLogout={onLogout} />
+        <main className="student-stats-main">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ fontSize: '18px', color: '#64748b' }}>
+              Loading student data...
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="student-stats-container">
+        <Sidebar onLogout={onLogout} />
+        <main className="student-stats-main">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ fontSize: '18px', color: '#ef4444' }}>
+              Error: {error}
+            </div>
+            <button 
+              onClick={() => {
+                setError(null);
+                fetchStudents();
+                fetchFilterOptions();
+                fetchStats();
+              }}
+              style={{
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                cursor: 'pointer'
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Apply filters and search to students
+  const filteredStudents = students.filter(student => {
+    // Search filter
+    const matchesSearch = !searchTerm || 
+      student.s_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.s_father?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.s_id?.toString().includes(searchTerm);
+
+    // Dropdown filters
+    const matchesPariyojna = !filters.sp_id || student.sp_id?.toString() === filters.sp_id;
+    const matchesSector = !filters.ss_id || student.ss_id?.toString() === filters.ss_id;
+    const matchesKendra = !filters.sk_id || student.sk_id?.toString() === filters.sk_id;
+    const matchesHealth = !filters.s_healtha_status || student.s_healtha_status === filters.s_healtha_status;
+    const matchesAge = !filters.s_age || student.s_age?.toString() === filters.s_age;
+
+    return matchesSearch && matchesPariyojna && matchesSector && matchesKendra && matchesHealth && matchesAge;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    // Scroll to top of table when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -421,9 +535,46 @@ const StudentStats = ({ onLogout }) => {
                 HarGhar Munga Project - Student Statistics Portal
               </p>
             </div>
-            <div className="student-stats-status">
-              <span className="student-status-dot">●</span>
-              Live Data
+            <div className="student-stats-status-container">
+              <button 
+                onClick={refreshData}
+                className="refresh-btn"
+                disabled={loading}
+                title="पूरे डेटा को रीफ्रेश करें"
+                style={{
+                  background: '#16a34a',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginRight: '16px',
+                  transition: 'all 0.3s ease',
+                  opacity: loading ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.target.style.background = '#15803d';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#16a34a';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                <RotateCcw className={`w-4 h-4 ${loading ? 'spin' : ''}`} />
+                {loading ? 'रीफ्रेश हो रहा है...' : 'रीफ्रेश करें'}
+              </button>
+              <div className="student-stats-status">
+                <span className="student-status-dot">●</span>
+                Live Data
+              </div>
             </div>
           </div>
         </div>
@@ -443,7 +594,7 @@ const StudentStats = ({ onLogout }) => {
               <input
                 type="text"
                 placeholder="बच्चे का नाम, माता-पिता का नाम, पता, स्वास्थ्य स्थिति से खोजें..."
-                value={searchTerm}
+                value={searchInput}
                 onChange={handleSearchChange}
                 style={{ 
                   width: '100%', 
@@ -520,9 +671,11 @@ const StudentStats = ({ onLogout }) => {
                 }}
               >
                 <option value="">सभी परियोजनाएं</option>
-                <option value="1">पोषण आहार</option>
-                <option value="2">स्वास्थ्य सेवा</option>
-                <option value="3">शिक्षा कार्यक्रम</option>
+                {filterOptions.pariyojna?.map(pariyojna => (
+                  <option key={pariyojna.p_id} value={pariyojna.p_id}>
+                    {pariyojna.p_name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -545,9 +698,11 @@ const StudentStats = ({ onLogout }) => {
                 }}
               >
                 <option value="">सभी सेक्टर</option>
-                <option value="1">शहरी</option>
-                <option value="2">ग्रामीण</option>
-                <option value="3">अर्ध-शहरी</option>
+                {getFilteredSectors(filters.sp_id)?.map(sector => (
+                  <option key={sector.s_id} value={sector.s_id}>
+                    {sector.s_name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -570,13 +725,11 @@ const StudentStats = ({ onLogout }) => {
                 }}
               >
                 <option value="">सभी केंद्र</option>
-                <option value="8">प्री-स्कूल केंद्र 8</option>
-                <option value="10">शहरी आंगनवाड़ी 10</option>
-                <option value="12">आंगनवाड़ी केंद्र 12</option>
-                <option value="15">CHC RAIPUR</option>
-                <option value="18">प्राथमिक स्वास्थ्य केंद्र 18</option>
-                <option value="20">ग्रामीण स्वास्थ्य केंद्र 20</option>
-                <option value="22">पहाड़ी स्वास्थ्य केंद्र 22</option>
+                {getFilteredKendras(filters.ss_id, filters.sp_id)?.map(kendra => (
+                  <option key={kendra.k_id} value={kendra.k_id}>
+                    {kendra.k_name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -599,10 +752,11 @@ const StudentStats = ({ onLogout }) => {
                 }}
               >
                 <option value="">सभी स्थितियां</option>
-                <option value="स्वस्थ">स्वस्थ</option>
-                <option value="सामान्य">सामान्य</option>
-                <option value="कमज़ोर">कमज़ोर</option>
-                <option value="बीमार">बीमार</option>
+                {filterOptions.health_status?.map(status => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -630,6 +784,40 @@ const StudentStats = ({ onLogout }) => {
                 <option value="4">4 साल</option>
                 <option value="5">5 साल</option>
               </select>
+            </div>
+
+            {/* Clear Filters Button */}
+            <div style={{ display: 'flex', alignItems: 'end' }}>
+              <button
+                onClick={clearAllFilters}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '2px solid #ef4444',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = '#dc2626';
+                  e.target.style.borderColor = '#dc2626';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = '#ef4444';
+                  e.target.style.borderColor = '#ef4444';
+                }}
+              >
+                <X size={16} />
+                फ़िल्टर साफ़ करें
+              </button>
             </div>
           </div>
         </div>
@@ -675,7 +863,7 @@ const StudentStats = ({ onLogout }) => {
                 borderRadius: '20px',
                 border: '1px solid rgba(14, 165, 233, 0.2)'
               }}>
-                {filteredStudents.length} में से {students.length} बच्चे दिखाए गए
+                पेज {currentPage} - {currentStudents.length} बच्चे (कुल {filteredStudents.length})
               </span>
             )}
           </div>
@@ -710,7 +898,7 @@ const StudentStats = ({ onLogout }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student, index) => (
+                  {currentStudents.map((student, index) => (
                     <tr key={student.s_id} style={{ 
                       borderBottom: '1px solid #e2e8f0', 
                       transition: 'all 0.3s ease', 
@@ -807,7 +995,7 @@ const StudentStats = ({ onLogout }) => {
                           color: getHealthStatusColor(student.s_healtha_status),
                           border: `1px solid ${getHealthStatusColor(student.s_healtha_status)}30`
                         }}>
-                          {student.s_healtha_status}
+                          {getHealthStatusLabel(student.s_healtha_status)}
                         </span>
                       </td>
                       <td style={{ padding: '16px', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', fontSize: '14px' }}>
@@ -989,6 +1177,110 @@ const StudentStats = ({ onLogout }) => {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {filteredStudents.length > 0 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginTop: '32px',
+              padding: '20px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '12px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #e2e8f0'
+            }}>
+              {/* Pagination Info */}
+              <div style={{
+                fontSize: '14px',
+                color: '#64748b',
+                fontWeight: 500
+              }}>
+                कुल {filteredStudents.length} में से {indexOfFirstStudent + 1}-{Math.min(indexOfLastStudent, filteredStudents.length)} दिखाए गए
+              </div>
+
+              {/* Pagination Controls */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: currentPage === 1 ? '#f8fafc' : 'white',
+                    color: currentPage === 1 ? '#94a3b8' : '#475569',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  पिछला
+                </button>
+
+                {/* Page Numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => {
+                  // Show only 5 pages around current page
+                  if (pageNumber === 1 || pageNumber === totalPages || 
+                      (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)) {
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: pageNumber === currentPage ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                          backgroundColor: pageNumber === currentPage ? '#3b82f6' : 'white',
+                          color: pageNumber === currentPage ? 'white' : '#475569',
+                          fontSize: '14px',
+                          fontWeight: pageNumber === currentPage ? 600 : 500,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          minWidth: '36px'
+                        }}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  } else if (pageNumber === currentPage - 3 || pageNumber === currentPage + 3) {
+                    return (
+                      <span key={pageNumber} style={{ color: '#94a3b8', fontSize: '14px' }}>
+                        ...
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: currentPage === totalPages ? '#f8fafc' : 'white',
+                    color: currentPage === totalPages ? '#94a3b8' : '#475569',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  अगला
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Modal */}
@@ -1353,7 +1645,7 @@ const StudentStats = ({ onLogout }) => {
                           color: getHealthStatusColor(selectedStudent.s_healtha_status), 
                           fontSize: '18px',
                           fontWeight: 700
-                        }}>{selectedStudent.s_healtha_status}</span>
+                        }}>{getHealthStatusLabel(selectedStudent.s_healtha_status)}</span>
                       </div>
                     </div>
                   </div>
@@ -1660,52 +1952,69 @@ const StudentStats = ({ onLogout }) => {
                       </h3>
                     </div>
                     <div style={{ padding: '16px' }}>
-                      <img 
-                        src={selectedStudentPhotos.photos.distribution_photo}
-                        alt="Distribution Photo"
-                        style={{
-                          width: '100%',
-                          height: '200px',
-                          objectFit: 'cover',
-                          borderRadius: '8px',
-                          border: '1px solid #e2e8f0'
-                        }}
-                      />
-                      <div style={{ 
-                        marginTop: '12px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <span style={{ 
-                          fontSize: '12px', 
-                          color: '#64748b',
-                          fontWeight: 500
-                        }}>
-                          पोषण आहार वितरण
-                        </span>
-                        <button 
-                          style={{
-                            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
+                      {selectedStudentPhotos.photos.distribution ? (
+                        <>
+                          <img 
+                            src={`${serverURL}${selectedStudentPhotos.photos.distribution.photo_url}`}
+                            alt="Distribution Photo"
+                            style={{
+                              width: '100%',
+                              height: '200px',
+                              objectFit: 'cover',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0'
+                            }}
+                          />
+                          <div style={{ 
+                            marginTop: '12px',
                             display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            transition: 'all 0.3s ease'
-                          }}
-                          onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
-                          onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
-                        >
-                          <Download size={12} />
-                          Download
-                        </button>
-                      </div>
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span style={{ 
+                              fontSize: '12px', 
+                              color: '#64748b',
+                              fontWeight: 500
+                            }}>
+                              पोषण आहार वितरण - {new Date(selectedStudentPhotos.photos.distribution.created_at).toLocaleDateString('hi-IN')}
+                            </span>
+                            <button 
+                              onClick={() => window.open(`${serverURL}${selectedStudentPhotos.photos.distribution.photo_url}`, '_blank')}
+                              style={{
+                                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                transition: 'all 0.3s ease'
+                              }}
+                              onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
+                              onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
+                            >
+                              <Download size={12} />
+                              Download
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{
+                          height: '200px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#f1f5f9',
+                          borderRadius: '8px',
+                          color: '#64748b'
+                        }}>
+                          कोई डिस्ट्रिब्यूशन फ़ोटो उपलब्ध नहीं
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1735,52 +2044,69 @@ const StudentStats = ({ onLogout }) => {
                       </h3>
                     </div>
                     <div style={{ padding: '16px' }}>
-                      <img 
-                        src={selectedStudentPhotos.photos.certificate_photo}
-                        alt="Certificate Photo"
-                        style={{
-                          width: '100%',
-                          height: '200px',
-                          objectFit: 'cover',
-                          borderRadius: '8px',
-                          border: '1px solid #e2e8f0'
-                        }}
-                      />
-                      <div style={{ 
-                        marginTop: '12px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <span style={{ 
-                          fontSize: '12px', 
-                          color: '#64748b',
-                          fontWeight: 500
-                        }}>
-                          उपलब्धि प्रमाणपत्र
-                        </span>
-                        <button 
-                          style={{
-                            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
+                      {selectedStudentPhotos.photos.certificate ? (
+                        <>
+                          <img 
+                            src={`${serverURL}${selectedStudentPhotos.photos.certificate.photo_url}`}
+                            alt="Certificate Photo"
+                            style={{
+                              width: '100%',
+                              height: '200px',
+                              objectFit: 'cover',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0'
+                            }}
+                          />
+                          <div style={{ 
+                            marginTop: '12px',
                             display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            transition: 'all 0.3s ease'
-                          }}
-                          onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
-                          onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
-                        >
-                          <Download size={12} />
-                          Download
-                        </button>
-                      </div>
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span style={{ 
+                              fontSize: '12px', 
+                              color: '#64748b',
+                              fontWeight: 500
+                            }}>
+                              उपलब्धि प्रमाणपत्र - {new Date(selectedStudentPhotos.photos.certificate.created_at).toLocaleDateString('hi-IN')}
+                            </span>
+                            <button 
+                              onClick={() => window.open(`${serverURL}${selectedStudentPhotos.photos.certificate.photo_url}`, '_blank')}
+                              style={{
+                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                transition: 'all 0.3s ease'
+                              }}
+                              onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
+                              onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
+                            >
+                              <Download size={12} />
+                              Download
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{
+                          height: '200px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#f1f5f9',
+                          borderRadius: '8px',
+                          color: '#64748b'
+                        }}>
+                          कोई सर्टिफिकेट फ़ोटो उपलब्ध नहीं
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1810,52 +2136,74 @@ const StudentStats = ({ onLogout }) => {
                       </h3>
                     </div>
                     <div style={{ padding: '16px' }}>
-                      <img 
-                        src={selectedStudentPhotos.photos.plant_photo}
-                        alt="Latest Plant Photo"
-                        style={{
-                          width: '100%',
+                      {selectedStudentPhotos.photos.latest_uploads && selectedStudentPhotos.photos.latest_uploads.length > 0 ? (
+                        <div style={{ display: 'grid', gap: '12px' }}>
+                          {selectedStudentPhotos.photos.latest_uploads.slice(0, 3).map((photo, index) => (
+                            <div key={index} style={{ 
+                              display: 'flex', 
+                              gap: '12px',
+                              padding: '8px',
+                              backgroundColor: '#f8fafc',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <img 
+                                src={`${serverURL}${photo.photo_url}`}
+                                alt={`Plant Photo ${index + 1}`}
+                                style={{
+                                  width: '60px',
+                                  height: '60px',
+                                  objectFit: 'cover',
+                                  borderRadius: '6px',
+                                  border: '1px solid #e2e8f0'
+                                }}
+                              />
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                <div>
+                                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#1e293b' }}>
+                                    प्लांट फ़ोटो #{index + 1}
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#64748b' }}>
+                                    {new Date(photo.created_at).toLocaleDateString('hi-IN')}
+                                  </div>
+                                </div>
+                                <button 
+                                  onClick={() => window.open(`${serverURL}${photo.photo_url}`, '_blank')}
+                                  style={{
+                                    background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    fontSize: '10px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    alignSelf: 'flex-start'
+                                  }}
+                                >
+                                  <Download size={10} />
+                                  View
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{
                           height: '200px',
-                          objectFit: 'cover',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#f1f5f9',
                           borderRadius: '8px',
-                          border: '1px solid #e2e8f0'
-                        }}
-                      />
-                      <div style={{ 
-                        marginTop: '12px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <span style={{ 
-                          fontSize: '12px', 
-                          color: '#64748b',
-                          fontWeight: 500
+                          color: '#64748b'
                         }}>
-                          पौधारोपण कार्यक्रम
-                        </span>
-                        <button 
-                          style={{
-                            background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            transition: 'all 0.3s ease'
-                          }}
-                          onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)'; }}
-                          onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; }}
-                        >
-                          <Download size={12} />
-                          Download
-                        </button>
-                      </div>
+                          कोई प्लांट फ़ोटो उपलब्ध नहीं
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2337,8 +2685,8 @@ const StudentStats = ({ onLogout }) => {
                           onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                         >
                           <option value="">स्वास्थ्य स्थिति चुनें</option>
-                          {healthStatusOptions.map(status => (
-                            <option key={status} value={status}>{status}</option>
+                          {filterOptions.health_status?.map(status => (
+                            <option key={status.value} value={status.value}>{status.label}</option>
                           ))}
                         </select>
                       </div>
@@ -2395,7 +2743,7 @@ const StudentStats = ({ onLogout }) => {
                           onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                         >
                           <option value="">परियोजना चुनें</option>
-                          {pariyojnaOptions.map(pariyojna => (
+                          {filterOptions.pariyojna?.map(pariyojna => (
                             <option key={pariyojna.p_id} value={pariyojna.p_id}>
                               {pariyojna.p_name}
                             </option>
