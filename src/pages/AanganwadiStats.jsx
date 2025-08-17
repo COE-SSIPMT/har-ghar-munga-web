@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
 import { Search, Plus, Eye, Edit, Building2, MapPin, User, Phone, Calendar, Check, AlertCircle, X, BarChart3 } from 'lucide-react';
 import '../styles/unified.css';
+import serverURL from './server';
 
 const AanganwadiStats = ({ onLogout }) => {
   const [filters, setFilters] = useState({
     kp_id: '',
-    ks_id: '',
-    k_name: ''
+    ks_id: ''
   });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,6 +16,18 @@ const AanganwadiStats = ({ onLogout }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedKendra, setSelectedKendra] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [kendras, setKendras] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 0
+  });
+  const [masterData, setMasterData] = useState({
+    pariyojnas: [],
+    sectors: []
+  });
   const [newKendra, setNewKendra] = useState({
     k_name: '',
     k_address: '',
@@ -34,131 +46,137 @@ const AanganwadiStats = ({ onLogout }) => {
     password: ''
   });
 
-  // Sample data based on master_kendra schema
-  const [kendras, setKendras] = useState([
-    {
-      k_id: 1,
-      ks_id: 2,
-      kp_id: 1,
-      k_name: 'CHC रायपुर आंगनवाड़ी केंद्र',
-      k_address: 'सेक्टर 19, नया रायपुर, छत्तीसगढ़ - 492002',
-      login_id: 'chc_raipur_001',
-      password: 'raipur@2024',
-      k_createdAt: '2024-01-15T10:30:00Z',
-      k_updatedAt: '2024-08-10T14:20:00Z',
-      // Related data
-      pariyojna_name: 'पोषण आहार कार्यक्रम',
-      sector_name: 'ग्रामीण',
-      total_students: 45,
-      active_students: 42
-    },
-    {
-      k_id: 2,
-      ks_id: 1,
-      kp_id: 2,
-      k_name: 'प्राथमिक स्वास्थ्य केंद्र धरसीवा',
-      k_address: 'मुख्य सड़क, धरसीवा, रायपुर, छत्तीसगढ़ - 492004',
-      login_id: 'phc_dharsiwa_002',
-      password: 'dharsiwa@2024',
-      k_createdAt: '2024-02-20T09:15:00Z',
-      k_updatedAt: '2024-08-12T16:45:00Z',
-      // Related data
-      pariyojna_name: 'स्वास्थ्य सेवा कार्यक्रम',
-      sector_name: 'शहरी',
-      total_students: 60,
-      active_students: 58
-    },
-    {
-      k_id: 3,
-      ks_id: 2,
-      kp_id: 3,
-      k_name: 'आंगनवाड़ी केंद्र अरंग',
-      k_address: 'वार्ड नंबर 8, अरंग, रायपुर, छत्तीसगढ़ - 493441',
-      login_id: 'arang_center_003',
-      password: 'arang@2024',
-      k_createdAt: '2024-03-10T11:00:00Z',
-      k_updatedAt: '2024-08-14T08:30:00Z',
-      // Related data
-      pariyojna_name: 'शिक्षा एवं विकास कार्यक्रम',
-      sector_name: 'ग्रामीण',
-      total_students: 38,
-      active_students: 35
-    },
-    {
-      k_id: 4,
-      ks_id: 1,
-      kp_id: 1,
-      k_name: 'शहरी आंगनवाड़ी केंद्र सिविल लाइन्स',
-      k_address: 'सिविल लाइन्स रोड, रायपुर, छत्तीसगढ़ - 492001',
-      login_id: 'civil_lines_004',
-      password: 'civillines@2024',
-      k_createdAt: '2024-04-05T13:25:00Z',
-      k_updatedAt: '2024-08-13T12:15:00Z',
-      // Related data
-      pariyojna_name: 'पोषण आहार कार्यक्रम',
-      sector_name: 'शहरी',
-      total_students: 72,
-      active_students: 68
-    },
-    {
-      k_id: 5,
-      ks_id: 3,
-      kp_id: 2,
-      k_name: 'ग्रामीण स्वास्थ्य केंद्र महासमुंद',
-      k_address: 'ग्राम महासमुंद, तहसील महासमुंद, छत्तीसगढ़ - 493445',
-      login_id: 'mahasamund_005',
-      password: 'mahasamund@2024',
-      k_createdAt: '2024-05-12T07:45:00Z',
-      k_updatedAt: '2024-08-11T15:30:00Z',
-      // Related data
-      pariyojna_name: 'स्वास्थ्य सेवा कार्यक्रम',
-      sector_name: 'अर्ध-शहरी',
-      total_students: 29,
-      active_students: 27
-    },
-    {
-      k_id: 6,
-      ks_id: 2,
-      kp_id: 3,
-      k_name: 'आदिवासी आंगनवाड़ी केंद्र बस्तर',
-      k_address: 'जगदलपुर रोड, बस्तर, छत्तीसगढ़ - 494001',
-      login_id: 'bastar_tribal_006',
-      password: 'bastar@2024',
-      k_createdAt: '2024-06-08T14:20:00Z',
-      k_updatedAt: '2024-08-09T11:00:00Z',
-      // Related data
-      pariyojna_name: 'शिक्षा एवं विकास कार्यक्रम',
-      sector_name: 'ग्रामीण',
-      total_students: 52,
-      active_students: 49
+  // Fetch kendras from API
+  const fetchKendras = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      // Add pagination parameters
+      params.append('page', pagination.currentPage);
+      params.append('limit', pagination.itemsPerPage);
+      
+      // Add filters
+      if (filters.kp_id) params.append('kp_id', filters.kp_id);
+      if (filters.ks_id) params.append('ks_id', filters.ks_id);
+      if (searchTerm.trim()) params.append('search', searchTerm.trim());
+
+      const response = await fetch(`${serverURL}api_kendras.php?${params}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setKendras(data.data);
+        
+        // Update pagination from server response
+        if (data.pagination) {
+          setPagination(prev => ({
+            ...prev,
+            currentPage: data.pagination.currentPage,
+            totalPages: data.pagination.totalPages,
+            totalItems: data.pagination.totalItems,
+            itemsPerPage: data.pagination.itemsPerPage
+          }));
+        } else {
+          // Fallback for backward compatibility
+          setPagination(prev => ({
+            ...prev,
+            totalItems: data.count || 0,
+            totalPages: Math.ceil((data.count || 0) / prev.itemsPerPage)
+          }));
+        }
+      } else {
+        console.error('Error fetching kendras:', data.error);
+        alert('❌ डेटा लोड करने में समस्या: ' + data.error);
+        setKendras([]);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      alert('❌ नेटवर्क एरर: ' + error.message);
+      setKendras([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  // Fetch master data for dropdowns
+  const fetchMasterData = async () => {
+    try {
+      const response = await fetch(`${serverURL}api_kendras.php?action=master_data`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setMasterData({
+          pariyojnas: data.pariyojnas,
+          sectors: data.sectors
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching master data:', error);
+    }
+  };
+
+  // Load data on component mount and when filters change
+  useEffect(() => {
+    // Reset to first page when filters change
+    if (pagination.currentPage !== 1) {
+      setPagination(prev => ({ ...prev, currentPage: 1 }));
+    } else {
+      fetchKendras();
+    }
+  }, [filters, searchTerm]);
+
+  // Fetch data when page changes
+  useEffect(() => {
+    fetchKendras();
+  }, [pagination.currentPage]);
+
+  useEffect(() => {
+    fetchMasterData();
+  }, []);
 
   const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    
+    // If pariyojna changes, reset sector selection
+    if (name === 'kp_id') {
+      setFilters(prev => ({
+        ...prev,
+        [name]: value,
+        ks_id: '' // Reset sector when pariyojna changes
+      }));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Reset to first page when filter changes
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
   };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    // Reset to first page when search changes
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
   };
 
-  const filteredKendras = kendras.filter(kendra => {
-    const matchesSearch = kendra.k_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         kendra.k_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         kendra.pariyojna_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         kendra.sector_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         kendra.login_id.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilters = 
-      (!filters.kp_id || kendra.kp_id.toString() === filters.kp_id) &&
-      (!filters.ks_id || kendra.ks_id.toString() === filters.ks_id) &&
-      (!filters.k_name || kendra.k_name.toLowerCase().includes(filters.k_name.toLowerCase()));
-    
-    return matchesSearch && matchesFilters;
-  });
+  // Pagination functions
+  const goToPage = (page) => {
+    if (page >= 1 && page <= pagination.totalPages) {
+      setPagination(prev => ({ ...prev, currentPage: page }));
+    }
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPagination(prev => ({
+      ...prev,
+      itemsPerPage: newSize,
+      currentPage: 1
+    }));
+  };
+
+  const filteredKendras = kendras; // Already filtered by API
 
   const infoBoxData = [
     {
@@ -187,50 +205,48 @@ const AanganwadiStats = ({ onLogout }) => {
     }
   ];
 
-  const handleAddKendra = (e) => {
+  const handleAddKendra = async (e) => {
     e.preventDefault();
-    const newId = Math.max(...kendras.map(k => k.k_id)) + 1;
-    const currentTime = new Date().toISOString();
-    setKendras([...kendras, {
-      ...newKendra,
-      k_id: newId,
-      ks_id: parseInt(newKendra.ks_id),
-      kp_id: parseInt(newKendra.kp_id),
-      k_createdAt: currentTime,
-      k_updatedAt: currentTime,
-      // Sample related data
-      pariyojna_name: getPariyojnaName(parseInt(newKendra.kp_id)),
-      sector_name: getSectorName(parseInt(newKendra.ks_id)),
-      total_students: 0,
-      active_students: 0
-    }]);
-    setNewKendra({
-      k_name: '',
-      k_address: '',
-      ks_id: '',
-      kp_id: '',
-      login_id: '',
-      password: ''
-    });
-    setShowAddModal(false);
+    
+    try {
+      const response = await fetch(`${serverURL}api_kendras.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newKendra)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('✅ केंद्र सफलतापूर्वक जोड़ा गया!');
+        setNewKendra({
+          k_name: '',
+          k_address: '',
+          ks_id: '',
+          kp_id: '',
+          login_id: '',
+          password: ''
+        });
+        setShowAddModal(false);
+        fetchKendras(); // Refresh data
+      } else {
+        alert('❌ एरर: ' + data.error);
+      }
+    } catch (error) {
+      alert('❌ नेटवर्क एरर: ' + error.message);
+    }
   };
 
   const getPariyojnaName = (kp_id) => {
-    const pariyojnas = {
-      1: 'पोषण आहार कार्यक्रम',
-      2: 'स्वास्थ्य सेवा कार्यक्रम',
-      3: 'शिक्षा एवं विकास कार्यक्रम'
-    };
-    return pariyojnas[kp_id] || 'अज्ञात कार्यक्रम';
+    const pariyojna = masterData.pariyojnas.find(p => p.p_id === parseInt(kp_id));
+    return pariyojna ? pariyojna.p_name : 'अज्ञात कार्यक्रम';
   };
 
   const getSectorName = (ks_id) => {
-    const sectors = {
-      1: 'शहरी',
-      2: 'ग्रामीण',
-      3: 'अर्ध-शहरी'
-    };
-    return sectors[ks_id] || 'अज्ञात सेक्टर';
+    const sector = masterData.sectors.find(s => s.s_id === parseInt(ks_id));
+    return sector ? sector.s_name : 'अज्ञात सेक्टर';
   };
 
   const handleInputChange = (e) => {
@@ -247,43 +263,53 @@ const AanganwadiStats = ({ onLogout }) => {
     });
   };
 
-  const handleEditKendra = (e) => {
+  const handleEditKendra = async (e) => {
     e.preventDefault();
-    const updatedKendras = kendras.map(kendra => 
-      kendra.k_id === editKendra.k_id 
-        ? {
-            ...kendra,
-            ...editKendra,
-            ks_id: parseInt(editKendra.ks_id),
-            kp_id: parseInt(editKendra.kp_id),
-            k_updatedAt: new Date().toISOString(),
-            pariyojna_name: getPariyojnaName(parseInt(editKendra.kp_id)),
-            sector_name: getSectorName(parseInt(editKendra.ks_id))
-          }
-        : kendra
-    );
-    setKendras(updatedKendras);
-    setShowEditModal(false);
-    setEditKendra({
-      k_id: '',
-      k_name: '',
-      k_address: '',
-      ks_id: '',
-      kp_id: '',
-      login_id: '',
-      password: ''
-    });
+    
+    try {
+      const response = await fetch(`${serverURL}api_kendras.php`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editKendra)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('✅ केंद्र सफलतापूर्वक अपडेट हुआ!');
+        setShowEditModal(false);
+        setEditKendra({
+          k_id: '',
+          k_name: '',
+          k_address: '',
+          ks_id: '',
+          kp_id: '',
+          login_id: '',
+          password: ''
+        });
+        fetchKendras(); // Refresh data
+      } else {
+        alert('❌ एरर: ' + data.error);
+      }
+    } catch (error) {
+      alert('❌ नेटवर्क एरर: ' + error.message);
+    }
   };
 
   const navigateToStudents = (kendra) => {
-    // Navigate to StudentStats with filters
-    const filters = {
-      kendra_id: kendra.k_id,
-      kendra_name: kendra.k_name
-    };
-    // Here you would use router.push or navigate function
-    console.log('Navigating to StudentStats with filters:', filters);
-    // For now, we'll just close the modal
+    // Store kendra details in localStorage for StudentStats to pick up
+    localStorage.setItem('selectedKendra', JSON.stringify({
+      k_id: kendra.k_id,
+      k_name: kendra.k_name,
+      sp_id: kendra.kp_id,
+      ss_id: kendra.ks_id,
+      sk_id: kendra.k_id
+    }));
+    
+    // Navigate to StudentStats
+    window.location.href = '#/students';
     setShowDetailModal(false);
   };
 
@@ -397,140 +423,200 @@ const AanganwadiStats = ({ onLogout }) => {
             </button>
           </div>
           
-          {/* Search Bar */}
+          {/* Search Bar with Button */}
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ position: 'relative', width: '100%' }}>
-              <input
-                type="text"
-                placeholder="केंद्र का नाम, पता, परियोजना, सेक्टर या लॉगिन ID से खोजें..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '16px 24px', 
-                  paddingRight: '60px', 
-                  border: '2px solid #e2e8f0', 
-                  borderRadius: '12px', 
-                  fontSize: '16px', 
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease', 
-                  background: 'white', 
-                  outline: 'none', 
-                  boxSizing: 'border-box' 
-                }}
-                onFocus={(e) => { 
-                  e.target.style.borderColor = '#0ea5e9'; 
-                  e.target.style.boxShadow = '0 0 0 4px rgba(14, 165, 233, 0.1)'; 
-                }}
-                onBlur={(e) => { 
-                  e.target.style.borderColor = '#e2e8f0'; 
-                  e.target.style.boxShadow = 'none'; 
-                }}
-              />
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm('')}
-                  title="खोज साफ़ करें"
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder="केंद्र का नाम, पता, परियोजना, सेक्टर या लॉगिन ID से खोजें..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   style={{ 
-                    position: 'absolute', 
-                    right: '16px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    background: '#ef4444', 
-                    border: 'none', 
-                    borderRadius: '8px',
-                    width: '32px',
-                    height: '32px',
+                    width: '100%', 
+                    padding: '16px 24px', 
+                    paddingRight: '60px', 
+                    border: '2px solid #e2e8f0', 
+                    borderRadius: '12px', 
                     fontSize: '16px', 
-                    color: 'white', 
-                    cursor: 'pointer', 
-                    fontWeight: 'bold',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    transition: 'all 0.3s ease' 
+                    fontWeight: '500',
+                    transition: 'all 0.3s ease', 
+                    background: 'white', 
+                    color: '#1e293b',
+                    outline: 'none', 
+                    boxSizing: 'border-box' 
                   }}
-                  onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
-                  onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
-                >
-                  <X size={18} color="white" />
-                </button>
-              )}
+                  onFocus={(e) => { 
+                    e.target.style.borderColor = '#0ea5e9'; 
+                    e.target.style.boxShadow = '0 0 0 4px rgba(14, 165, 233, 0.1)'; 
+                  }}
+                  onBlur={(e) => { 
+                    e.target.style.borderColor = '#e2e8f0'; 
+                    e.target.style.boxShadow = 'none'; 
+                  }}
+                />
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm('')}
+                    title="खोज साफ़ करें"
+                    style={{ 
+                      position: 'absolute', 
+                      right: '16px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      background: '#ef4444', 
+                      border: 'none', 
+                      borderRadius: '8px',
+                      width: '32px',
+                      height: '32px',
+                      fontSize: '16px', 
+                      color: 'white', 
+                      cursor: 'pointer', 
+                      fontWeight: 'bold',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      transition: 'all 0.3s ease' 
+                    }}
+                    onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
+                    onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
+                  >
+                    <X size={18} color="white" />
+                  </button>
+                )}
+              </div>
+              
+              <button
+                onClick={() => {
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                style={{
+                  padding: '16px 24px',
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 20px rgba(5, 150, 105, 0.4)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.3)';
+                }}
+              >
+                <Search size={16} />
+                खोजें
+              </button>
             </div>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>परियोजना ID</label>
-              <select
-                name="kp_id"
-                value={filters.kp_id}
-                onChange={handleFilterChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 16px', 
-                  borderRadius: '8px', 
-                  border: '2px solid #e2e8f0', 
-                  fontSize: '14px', 
-                  fontWeight: '500',
-                  boxSizing: 'border-box',
-                  background: 'white',
-                  color: '#1e293b'
-                }}
-              >
-                <option value="">सभी परियोजनाएं</option>
-                <option value="1">पोषण आहार कार्यक्रम</option>
-                <option value="2">स्वास्थ्य सेवा कार्यक्रम</option>
-                <option value="3">शिक्षा एवं विकास कार्यक्रम</option>
-              </select>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '20px', marginBottom: '20px' }}>
+            {/* Filter Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', flex: 1 }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>परियोजना चुनें</label>
+                <select
+                  name="kp_id"
+                  value={filters.kp_id}
+                  onChange={handleFilterChange}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px 16px', 
+                    borderRadius: '8px', 
+                    border: '2px solid #e2e8f0', 
+                    fontSize: '14px', 
+                    fontWeight: '500',
+                    boxSizing: 'border-box',
+                    background: 'white',
+                    color: '#1e293b'
+                  }}
+                >
+                  <option value="">सभी परियोजनाएं</option>
+                  {masterData.pariyojnas.map(pariyojna => (
+                    <option key={pariyojna.p_id} value={pariyojna.p_id}>
+                      {pariyojna.p_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>सेक्टर चुनें</label>
+                <select
+                  name="ks_id"
+                  value={filters.ks_id}
+                  onChange={handleFilterChange}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px 16px', 
+                    borderRadius: '8px', 
+                    border: '2px solid #e2e8f0', 
+                    fontSize: '14px', 
+                    fontWeight: '500',
+                    boxSizing: 'border-box',
+                    background: 'white',
+                    color: '#1e293b'
+                  }}
+                >
+                  <option value="">सभी सेक्टर</option>
+                  {masterData.sectors
+                    .filter(sector => !filters.kp_id || sector.sp_id == filters.kp_id)
+                    .map(sector => (
+                      <option key={sector.s_id} value={sector.s_id}>
+                        {sector.s_name}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>सेक्टर ID</label>
-              <select
-                name="ks_id"
-                value={filters.ks_id}
-                onChange={handleFilterChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 16px', 
-                  borderRadius: '8px', 
-                  border: '2px solid #e2e8f0', 
-                  fontSize: '14px', 
-                  fontWeight: '500',
-                  boxSizing: 'border-box',
-                  background: 'white',
-                  color: '#1e293b'
+            {/* Clear Filters Button */}
+            {(filters.kp_id || filters.ks_id || searchTerm) && (
+              <button
+                onClick={() => {
+                  setFilters({ kp_id: '', ks_id: '' });
+                  setSearchTerm('');
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                style={{
+                  padding: '12px 20px',
+                  background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 20px rgba(220, 38, 38, 0.4)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
                 }}
               >
-                <option value="">सभी सेक्टर</option>
-                <option value="1">शहरी</option>
-                <option value="2">ग्रामीण</option>
-                <option value="3">अर्ध-शहरी</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>केंद्र का नाम</label>
-              <input
-                type="text"
-                name="k_name"
-                value={filters.k_name}
-                onChange={handleFilterChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 16px', 
-                  borderRadius: '8px', 
-                  border: '2px solid #e2e8f0', 
-                  fontSize: '14px', 
-                  fontWeight: '500',
-                  boxSizing: 'border-box',
-                  background: 'white',
-                  color: '#1e293b'
-                }}
-                placeholder="केंद्र का नाम खोजें..."
-              />
-            </div>
+                <X size={16} />
+                फ़िल्टर साफ़ करें
+              </button>
+            )}
           </div>
         </div>
 
@@ -616,7 +702,31 @@ const AanganwadiStats = ({ onLogout }) => {
               overflowY: 'auto',
               overflowX: 'hidden'
             }}>
-              {filteredKendras.length > 0 ? (
+              {loading ? (
+                <div style={{ 
+                  padding: '60px 40px', 
+                  textAlign: 'center',
+                  background: 'white'
+                }}>
+                  <div style={{ 
+                    fontSize: '18px', 
+                    color: '#1e293b',
+                    fontWeight: 600,
+                    marginBottom: '16px'
+                  }}>
+                    🔄 डेटा लोड हो रहा है...
+                  </div>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    border: '4px solid #e2e8f0',
+                    borderTop: '4px solid #22c55e',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto'
+                  }}></div>
+                </div>
+              ) : filteredKendras.length > 0 ? (
                 filteredKendras.map((kendra, index) => (
                   <div 
                     key={kendra.k_id} 
@@ -872,6 +982,187 @@ const AanganwadiStats = ({ onLogout }) => {
               )}
             </div>
           </div>
+          
+          {/* Pagination Controls */}
+          {!loading && kendras.length > 0 && (
+            <div style={{ 
+              marginTop: '24px', 
+              padding: '20px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '16px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '16px'
+              }}>
+                {/* Page Info */}
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#64748b',
+                  fontWeight: 500
+                }}>
+                  <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                    पृष्ठ {pagination.currentPage} of {pagination.totalPages}
+                  </span>
+                  <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span>
+                  <span>कुल {pagination.totalItems} केंद्र</span>
+                  <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span>
+                  <span>{kendras.length} दिखाए गए</span>
+                </div>
+
+                {/* Page Size Selector */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 500 }}>
+                    प्रति पृष्ठ:
+                  </span>
+                  <select
+                    value={pagination.itemsPerPage}
+                    onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
+                    style={{
+                      padding: '6px 12px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      background: 'white',
+                      color: '#1e293b',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                {/* Page Navigation */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* First Page */}
+                  <button
+                    onClick={() => goToPage(1)}
+                    disabled={pagination.currentPage === 1}
+                    style={{
+                      padding: '8px 12px',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer',
+                      background: pagination.currentPage === 1 ? '#f8fafc' : '#22c55e',
+                      color: pagination.currentPage === 1 ? '#cbd5e1' : 'white',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    ««
+                  </button>
+
+                  {/* Previous Page */}
+                  <button
+                    onClick={() => goToPage(pagination.currentPage - 1)}
+                    disabled={pagination.currentPage === 1}
+                    style={{
+                      padding: '8px 12px',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer',
+                      background: pagination.currentPage === 1 ? '#f8fafc' : '#059669',
+                      color: pagination.currentPage === 1 ? '#cbd5e1' : 'white',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    « पिछला
+                  </button>
+
+                  {/* Page Numbers */}
+                  {(() => {
+                    const pages = [];
+                    const start = Math.max(1, pagination.currentPage - 2);
+                    const end = Math.min(pagination.totalPages, pagination.currentPage + 2);
+                    
+                    for (let i = start; i <= end; i++) {
+                      pages.push(
+                        <button
+                          key={i}
+                          onClick={() => goToPage(i)}
+                          style={{
+                            padding: '8px 12px',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            background: i === pagination.currentPage ? '#3b82f6' : '#f1f5f9',
+                            color: i === pagination.currentPage ? 'white' : '#475569',
+                            minWidth: '40px',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseOver={(e) => {
+                            if (i !== pagination.currentPage) {
+                              e.target.style.background = '#e2e8f0';
+                            }
+                          }}
+                          onMouseOut={(e) => {
+                            if (i !== pagination.currentPage) {
+                              e.target.style.background = '#f1f5f9';
+                            }
+                          }}
+                        >
+                          {i}
+                        </button>
+                      );
+                    }
+                    return pages;
+                  })()}
+
+                  {/* Next Page */}
+                  <button
+                    onClick={() => goToPage(pagination.currentPage + 1)}
+                    disabled={pagination.currentPage === pagination.totalPages}
+                    style={{
+                      padding: '8px 12px',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: pagination.currentPage === pagination.totalPages ? 'not-allowed' : 'pointer',
+                      background: pagination.currentPage === pagination.totalPages ? '#f8fafc' : '#059669',
+                      color: pagination.currentPage === pagination.totalPages ? '#cbd5e1' : 'white',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    अगला »
+                  </button>
+
+                  {/* Last Page */}
+                  <button
+                    onClick={() => goToPage(pagination.totalPages)}
+                    disabled={pagination.currentPage === pagination.totalPages}
+                    style={{
+                      padding: '8px 12px',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: pagination.currentPage === pagination.totalPages ? 'not-allowed' : 'pointer',
+                      background: pagination.currentPage === pagination.totalPages ? '#f8fafc' : '#22c55e',
+                      color: pagination.currentPage === pagination.totalPages ? '#cbd5e1' : 'white',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    »»
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Detail Modal */}
@@ -1314,9 +1605,11 @@ const AanganwadiStats = ({ onLogout }) => {
                       required
                     >
                       <option value="">सेक्टर चुनें</option>
-                      <option value="1">शहरी</option>
-                      <option value="2">ग्रामीण</option>
-                      <option value="3">अर्ध-शहरी</option>
+                      {masterData.sectors.map(sector => (
+                        <option key={sector.s_id} value={sector.s_id}>
+                          {sector.s_name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -1353,9 +1646,11 @@ const AanganwadiStats = ({ onLogout }) => {
                       required
                     >
                       <option value="">परियोजना चुनें</option>
-                      <option value="1">पोषण आहार कार्यक्रम</option>
-                      <option value="2">स्वास्थ्य सेवा कार्यक्रम</option>
-                      <option value="3">शिक्षा एवं विकास कार्यक्रम</option>
+                      {masterData.pariyojnas.map(pariyojna => (
+                        <option key={pariyojna.p_id} value={pariyojna.p_id}>
+                          {pariyojna.p_name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -1742,9 +2037,11 @@ const AanganwadiStats = ({ onLogout }) => {
                       required
                     >
                       <option value="">सेक्टर चुनें</option>
-                      <option value="S001">शिक्षा</option>
-                      <option value="S002">स्वास्थ्य</option>
-                      <option value="S003">पोषण</option>
+                      {masterData.sectors.map(sector => (
+                        <option key={sector.s_id} value={sector.s_id}>
+                          {sector.s_name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -1791,9 +2088,11 @@ const AanganwadiStats = ({ onLogout }) => {
                       required
                     >
                       <option value="">परियोजना चुनें</option>
-                      <option value="P001">आंगनवाड़ी विकास</option>
-                      <option value="P002">पोषण सुधार</option>
-                      <option value="P003">शिक्षा सुधार</option>
+                      {masterData.pariyojnas.map(pariyojna => (
+                        <option key={pariyojna.p_id} value={pariyojna.p_id}>
+                          {pariyojna.p_name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
