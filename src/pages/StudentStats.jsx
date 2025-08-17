@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home, Camera, Image, Download, RotateCcw } from 'lucide-react';
+import { Search, Eye, Edit, Baby, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home, Camera, Image, Download, RotateCcw } from 'lucide-react';
 import serverURL from './server';
 import '../styles/unified.css';
 
@@ -10,8 +10,7 @@ const StudentStats = ({ onLogout }) => {
     sp_id: '',
     ss_id: '',
     sk_id: '',
-    s_healtha_status: '',
-    s_age: ''
+    s_healtha_status: ''
   });
 
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -47,14 +46,40 @@ const StudentStats = ({ onLogout }) => {
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch data on component mount and when filters change
+  // Check for selectedKendra from localStorage on component mount
   useEffect(() => {
+    const selectedKendra = localStorage.getItem('selectedKendra');
+    if (selectedKendra) {
+      try {
+        const kendraData = JSON.parse(selectedKendra);
+        console.log('Loading filters from selectedKendra:', kendraData);
+        const newFilters = {
+          sp_id: kendraData.sp_id || '',
+          ss_id: kendraData.ss_id || '',
+          sk_id: kendraData.sk_id || '',
+          s_healtha_status: ''
+        };
+        console.log('New filters to set:', newFilters);
+        setFilters(newFilters);
+        // Clear the localStorage after using it
+        localStorage.removeItem('selectedKendra');
+      } catch (error) {
+        console.error('Error parsing selectedKendra from localStorage:', error);
+      }
+    }
+    // Always fetch filter options on mount
     fetchFilterOptions();
+  }, []);
+
+  // Fetch initial data on component mount (without filters)
+  useEffect(() => {
     fetchStudents();
     fetchStats();
   }, []);
 
+  // Fetch data when filters change (this will trigger after localStorage filters are set)
   useEffect(() => {
+    console.log('Filters changed, fetching data:', filters);
     fetchStudents();
     fetchStats();
     setCurrentPage(1); // Reset to first page when filters change
@@ -72,6 +97,7 @@ const StudentStats = ({ onLogout }) => {
   // API Functions
   const fetchFilterOptions = async () => {
     try {
+      console.log('Fetching filter options...');
       const response = await fetch(`${serverURL}hgm_student_web.php?action=get_filters`);
       
       // Check if response is ok and content-type is JSON
@@ -87,6 +113,7 @@ const StudentStats = ({ onLogout }) => {
       }
       
       const result = await response.json();
+      console.log('Filter options response:', result);
       
       if (result.success) {
         setFilterOptions(result.data);
@@ -102,13 +129,29 @@ const StudentStats = ({ onLogout }) => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        action: 'get_students',
-        ...filters,
-        search: searchTerm
+      console.log('Fetching students with filters:', filters);
+      console.log('Server URL:', serverURL);
+      
+      // Clean up filters - remove empty values
+      const cleanFilters = {};
+      Object.keys(filters).forEach(key => {
+        if (filters[key] && filters[key] !== '') {
+          cleanFilters[key] = filters[key];
+        }
       });
       
-      const response = await fetch(`${serverURL}hgm_student_web.php?${params}`);
+      const params = new URLSearchParams({
+        action: 'get_students',
+        ...cleanFilters,
+        search: searchTerm || ''
+      });
+      
+      console.log('Clean filters:', cleanFilters);
+      console.log('API call params:', params.toString());
+      const fullURL = `${serverURL}hgm_student_web.php?${params}`;
+      console.log('Full API URL:', fullURL);
+      
+      const response = await fetch(fullURL);
       
       // Check if response is ok and content-type is JSON
       if (!response.ok) {
@@ -123,12 +166,15 @@ const StudentStats = ({ onLogout }) => {
       }
       
       const result = await response.json();
+      console.log('Students API response:', result);
       
       if (result.success) {
-        setStudents(result.data);
+        setStudents(result.data || []);
         setError(null);
+        console.log('Students data set:', result.data);
       } else {
         setError(result.message);
+        console.error('API returned error:', result.message);
       }
     } catch (err) {
       setError('Error fetching students: ' + err.message);
@@ -140,13 +186,27 @@ const StudentStats = ({ onLogout }) => {
 
   const fetchStats = async () => {
     try {
-      const params = new URLSearchParams({
-        action: 'get_stats',
-        ...filters,
-        search: searchTerm
+      console.log('Fetching stats with filters:', filters);
+      
+      // Clean up filters - remove empty values
+      const cleanFilters = {};
+      Object.keys(filters).forEach(key => {
+        if (filters[key] && filters[key] !== '') {
+          cleanFilters[key] = filters[key];
+        }
       });
       
-      const response = await fetch(`${serverURL}hgm_student_web.php?${params}`);
+      const params = new URLSearchParams({
+        action: 'get_stats',
+        ...cleanFilters,
+        search: searchTerm || ''
+      });
+      
+      console.log('Stats API call params:', params.toString());
+      const fullURL = `${serverURL}hgm_student_web.php?${params}`;
+      console.log('Stats API URL:', fullURL);
+      
+      const response = await fetch(fullURL);
       
       // Check if response is ok and content-type is JSON
       if (!response.ok) {
@@ -161,9 +221,15 @@ const StudentStats = ({ onLogout }) => {
       }
       
       const result = await response.json();
+      console.log('Stats API response:', result);
       
       if (result.success) {
-        setStats(result.data);
+        setStats(result.data || {
+          total_students: 0,
+          healthy_students: 0,
+          weak_students: 0,
+          active_records: 0
+        });
       } else {
         console.error('Error fetching stats:', result.message);
       }
@@ -255,8 +321,7 @@ const StudentStats = ({ onLogout }) => {
       sp_id: '',
       ss_id: '',
       sk_id: '',
-      s_healtha_status: '',
-      s_age: ''
+      s_healtha_status: ''
     });
     setSearchInput('');
     setSearchTerm('');
@@ -502,9 +567,8 @@ const StudentStats = ({ onLogout }) => {
     const matchesSector = !filters.ss_id || student.ss_id?.toString() === filters.ss_id;
     const matchesKendra = !filters.sk_id || student.sk_id?.toString() === filters.sk_id;
     const matchesHealth = !filters.s_healtha_status || student.s_healtha_status === filters.s_healtha_status;
-    const matchesAge = !filters.s_age || student.s_age?.toString() === filters.s_age;
 
-    return matchesSearch && matchesPariyojna && matchesSector && matchesKendra && matchesHealth && matchesAge;
+    return matchesSearch && matchesPariyojna && matchesSector && matchesKendra && matchesHealth;
   });
 
   // Pagination logic
@@ -588,66 +652,102 @@ const StudentStats = ({ onLogout }) => {
             <h3 className="filters-title">खोज और फ़िल्टर</h3>
           </div>
           
-          {/* Search Bar */}
+          {/* Search Bar with Button */}
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ position: 'relative', width: '100%' }}>
-              <input
-                type="text"
-                placeholder="बच्चे का नाम, माता-पिता का नाम, पता, स्वास्थ्य स्थिति से खोजें..."
-                value={searchInput}
-                onChange={handleSearchChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '16px 24px', 
-                  paddingRight: '60px', 
-                  border: '2px solid #e2e8f0', 
-                  borderRadius: '12px', 
-                  fontSize: '16px', 
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease', 
-                  outline: 'none', 
-                  boxSizing: 'border-box',
-                  background: 'white'
-                }}
-                onFocus={(e) => { 
-                  e.target.style.borderColor = '#0ea5e9'; 
-                  e.target.style.boxShadow = '0 0 0 4px rgba(14, 165, 233, 0.1)'; 
-                }}
-                onBlur={(e) => { 
-                  e.target.style.borderColor = '#e2e8f0'; 
-                  e.target.style.boxShadow = 'none'; 
-                }}
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  title="खोज साफ़ करें"
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder="बच्चे का नाम, माता-पिता का नाम, पता, स्वास्थ्य स्थिति से खोजें..."
+                  value={searchInput}
+                  onChange={handleSearchChange}
                   style={{ 
-                    position: 'absolute', 
-                    right: '16px', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    background: '#ef4444', 
-                    border: 'none', 
+                    width: '100%', 
+                    padding: '16px 24px', 
+                    paddingRight: '60px', 
+                    border: '2px solid #e2e8f0', 
+                    borderRadius: '12px', 
                     fontSize: '16px', 
-                    color: 'white', 
-                    cursor: 'pointer', 
-                    padding: '8px', 
-                    width: '32px', 
-                    height: '32px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    borderRadius: '8px', 
-                    transition: 'all 0.3s ease',
-                    fontWeight: 'bold'
+                    fontWeight: '500',
+                    transition: 'all 0.3s ease', 
+                    outline: 'none', 
+                    boxSizing: 'border-box',
+                    background: 'white'
                   }}
-                  onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
-                  onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
-                >
-                  <X size={16} />
-                </button>
-              )}
+                  onFocus={(e) => { 
+                    e.target.style.borderColor = '#0ea5e9'; 
+                    e.target.style.boxShadow = '0 0 0 4px rgba(14, 165, 233, 0.1)'; 
+                  }}
+                  onBlur={(e) => { 
+                    e.target.style.borderColor = '#e2e8f0'; 
+                    e.target.style.boxShadow = 'none'; 
+                  }}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => {
+                      setSearchInput('');
+                      setSearchTerm('');
+                    }}
+                    title="खोज साफ़ करें"
+                    style={{ 
+                      position: 'absolute', 
+                      right: '16px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      background: '#ef4444', 
+                      border: 'none', 
+                      borderRadius: '8px',
+                      width: '32px',
+                      height: '32px',
+                      fontSize: '16px', 
+                      color: 'white', 
+                      cursor: 'pointer', 
+                      fontWeight: 'bold',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      transition: 'all 0.3s ease' 
+                    }}
+                    onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
+                    onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              
+              <button
+                onClick={() => {
+                  setCurrentPage(1);
+                }}
+                style={{
+                  padding: '16px 24px',
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 20px rgba(5, 150, 105, 0.4)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.3)';
+                }}
+              >
+                <Search size={16} />
+                खोजें
+              </button>
             </div>
           </div>
 
@@ -759,67 +859,52 @@ const StudentStats = ({ onLogout }) => {
                 ))}
               </select>
             </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1e293b', fontSize: '14px' }}>उम्र</label>
-              <select
-                name="s_age"
-                value={filters.s_age}
-                onChange={handleFilterChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px 16px', 
-                  borderRadius: '8px', 
-                  border: '2px solid #e2e8f0', 
-                  fontSize: '14px', 
-                  fontWeight: '500',
-                  boxSizing: 'border-box',
-                  background: 'white',
-                  color: '#1e293b'
-                }}
-              >
-                <option value="">सभी उम्र</option>
-                <option value="2">2 साल</option>
-                <option value="3">3 साल</option>
-                <option value="4">4 साल</option>
-                <option value="5">5 साल</option>
-              </select>
-            </div>
-
-            {/* Clear Filters Button */}
-            <div style={{ display: 'flex', alignItems: 'end' }}>
-              <button
-                onClick={clearAllFilters}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '2px solid #ef4444',
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#dc2626';
-                  e.target.style.borderColor = '#dc2626';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = '#ef4444';
-                  e.target.style.borderColor = '#ef4444';
-                }}
-              >
-                <X size={16} />
-                फ़िल्टर साफ़ करें
-              </button>
-            </div>
           </div>
+
+          {/* Clear Filters Button */}
+          {(filters.sp_id || filters.ss_id || filters.sk_id || filters.s_healtha_status || searchTerm) && (
+            <button
+              onClick={() => {
+                setFilters({
+                  sp_id: '',
+                  ss_id: '',
+                  sk_id: '',
+                  s_healtha_status: ''
+                });
+                setSearchInput('');
+                setSearchTerm('');
+                setCurrentPage(1);
+              }}
+              style={{
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                whiteSpace: 'nowrap',
+                marginTop: '16px'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 20px rgba(220, 38, 38, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
+              }}
+            >
+              <X size={16} />
+              फ़िल्टर साफ़ करें
+            </button>
+          )}
         </div>
 
         {/* Info Boxes */}
@@ -1054,89 +1139,23 @@ const StudentStats = ({ onLogout }) => {
                           <button 
                             onClick={() => openModal(student)}
                             title="विवरण देखें"
-                            style={{ 
-                              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '6px 10px',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              transition: 'all 0.3s ease',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '3px'
-                            }}
-                            onMouseOver={(e) => {
-                              e.target.style.transform = 'translateY(-2px)';
-                              e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
-                            }}
-                            onMouseOut={(e) => {
-                              e.target.style.transform = 'translateY(0)';
-                              e.target.style.boxShadow = 'none';
-                            }}
+                            className="student-action-btn view-btn"
                           >
                             <Eye size={12} />
-                            
                           </button>
                           <button 
                             title="संपादित करें"
                             onClick={() => openEditModal(student)}
-                            style={{ 
-                              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '6px 10px',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              transition: 'all 0.3s ease',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '3px'
-                            }}
-                            onMouseOver={(e) => {
-                              e.target.style.transform = 'translateY(-2px)';
-                              e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
-                            }}
-                            onMouseOut={(e) => {
-                              e.target.style.transform = 'translateY(0)';
-                              e.target.style.boxShadow = 'none';
-                            }}
+                            className="student-action-btn edit-btn"
                           >
                             <Edit size={12} />
-                            
                           </button>
                           <button 
-                            title="� फ़ोटो देखें"
+                            title="फ़ोटो देखें"
                             onClick={() => openPhotoModal(student)}
-                            style={{ 
-                              background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '6px 10px',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              transition: 'all 0.3s ease',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '3px'
-                            }}
-                            onMouseOver={(e) => {
-                              e.target.style.transform = 'translateY(-2px)';
-                              e.target.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.4)';
-                            }}
-                            onMouseOut={(e) => {
-                              e.target.style.transform = 'translateY(0)';
-                              e.target.style.boxShadow = 'none';
-                            }}
+                            className="student-action-btn photo-btn"
                           >
                             <Camera size={12} />
-                            
                           </button>
                         </div>
                       </td>
@@ -1315,33 +1334,11 @@ const StudentStats = ({ onLogout }) => {
                 background: 'linear-gradient(135deg, #166534, #15803d)',
                 color: 'white',
                 padding: '24px 32px',
-                position: 'relative'
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
-                <button 
-                  style={{ 
-                    position: 'absolute', 
-                    top: '20px', 
-                    right: '20px', 
-                    background: 'rgba(255, 255, 255, 0.2)', 
-                    border: 'none', 
-                    borderRadius: '50%',
-                    width: '40px',
-                    height: '40px',
-                    fontSize: '20px', 
-                    cursor: 'pointer', 
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.3s ease'
-                  }} 
-                  onClick={closeModal}
-                  onMouseOver={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.3)'; }}
-                  onMouseOut={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
-                >
-                  <X size={20} color="white" />
-                </button>
-                
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{
                     width: '60px',
@@ -1372,6 +1369,34 @@ const StudentStats = ({ onLogout }) => {
                     </p>
                   </div>
                 </div>
+                <button
+                  onClick={closeModal}
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    border: 'none',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    fontSize: '18px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'scale(1.1)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  ✕
+                </button>
               </div>
 
               {/* Modal Content */}
@@ -1783,23 +1808,32 @@ const StudentStats = ({ onLogout }) => {
                 justifyContent: 'flex-end',
                 gap: '12px'
               }}>
-                <button 
+                <button
+                  type="button"
                   onClick={closeModal}
                   style={{
-                    background: '#6b7280',
+                    padding: '12px 24px',
+                    background: 'linear-gradient(135deg, #6b7280, #9ca3af)',
                     color: 'white',
                     border: 'none',
-                    padding: '12px 24px',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
                   }}
-                  onMouseOver={(e) => { e.target.style.background = '#4b5563'; }}
-                  onMouseOut={(e) => { e.target.style.background = '#6b7280'; }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(107, 114, 128, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 >
-                  बंद करें
+                  रद्द करें
                 </button>
                 <button 
                   style={{
@@ -1807,11 +1841,13 @@ const StudentStats = ({ onLogout }) => {
                     color: 'white',
                     border: 'none',
                     padding: '12px 24px',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
                   }}
                   onMouseOver={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.4)'; }}
                   onMouseOut={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'none'; }}
@@ -1855,33 +1891,11 @@ const StudentStats = ({ onLogout }) => {
                 background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
                 color: 'white',
                 padding: '24px 32px',
-                position: 'relative'
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
-                <button 
-                  style={{ 
-                    position: 'absolute', 
-                    top: '20px', 
-                    right: '20px', 
-                    background: 'rgba(255, 255, 255, 0.2)', 
-                    border: 'none', 
-                    borderRadius: '50%',
-                    width: '40px',
-                    height: '40px',
-                    fontSize: '20px', 
-                    cursor: 'pointer', 
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.3s ease'
-                  }} 
-                  onClick={closePhotoModal}
-                  onMouseOver={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.3)'; }}
-                  onMouseOut={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
-                >
-                  <X size={20} color="#ffffff" />
-                </button>
-                
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{
                     width: '60px',
@@ -1912,6 +1926,34 @@ const StudentStats = ({ onLogout }) => {
                     </p>
                   </div>
                 </div>
+                <button
+                  onClick={closePhotoModal}
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    border: 'none',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    fontSize: '18px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'scale(1.1)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  ✕
+                </button>
               </div>
 
               {/* Photos Grid */}
@@ -2226,23 +2268,32 @@ const StudentStats = ({ onLogout }) => {
                 }}>
                   📸 HarGhar Munga Photo Gallery | Student ID: {selectedStudentPhotos.student.s_id}
                 </div>
-                <button 
+                <button
+                  type="button"
                   onClick={closePhotoModal}
                   style={{
-                    background: '#6b7280',
+                    padding: '12px 24px',
+                    background: 'linear-gradient(135deg, #6b7280, #9ca3af)',
                     color: 'white',
                     border: 'none',
-                    padding: '12px 24px',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
                   }}
-                  onMouseOver={(e) => { e.target.style.background = '#4b5563'; }}
-                  onMouseOut={(e) => { e.target.style.background = '#6b7280'; }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(107, 114, 128, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 >
-                  बंद करें
+                  रद्द करें
                 </button>
               </div>
             </div>
@@ -2284,33 +2335,11 @@ const StudentStats = ({ onLogout }) => {
                 color: 'white',
                 padding: '24px 32px',
                 position: 'relative',
-                flexShrink: 0
+                flexShrink: 0,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
-                <button 
-                  style={{ 
-                    position: 'absolute', 
-                    top: '20px', 
-                    right: '20px', 
-                    background: 'rgba(255, 255, 255, 0.2)', 
-                    border: 'none', 
-                    borderRadius: '50%',
-                    width: '40px',
-                    height: '40px',
-                    fontSize: '20px', 
-                    cursor: 'pointer', 
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.3s ease'
-                  }} 
-                  onClick={closeEditModal}
-                  onMouseOver={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.3)'; }}
-                  onMouseOut={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
-                >
-                  <X size={20} color="white" />
-                </button>
-                
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{
                     width: '60px',
@@ -2341,6 +2370,34 @@ const StudentStats = ({ onLogout }) => {
                     </p>
                   </div>
                 </div>
+                <button
+                  onClick={closeEditModal}
+                  style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    border: 'none',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    fontSize: '18px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'scale(1.1)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  ✕
+                </button>
               </div>
 
               {/* Edit Form */}
@@ -2923,23 +2980,31 @@ const StudentStats = ({ onLogout }) => {
                 }}>
                   ⚠️ सभी आवश्यक फ़ील्ड (*) भरना अनिवार्य है
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button 
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <button
                     type="button"
                     onClick={closeEditModal}
                     style={{
-                      background: '#6b7280',
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #6b7280, #9ca3af)',
                       color: 'white',
                       border: 'none',
-                      padding: '12px 24px',
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       fontSize: '14px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      transition: 'all 0.3s ease'
+                      transition: 'all 0.3s ease',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
                     }}
-                    onMouseOver={(e) => { e.target.style.background = '#4b5563'; }}
-                    onMouseOut={(e) => { e.target.style.background = '#6b7280'; }}
+                    onMouseOver={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(107, 114, 128, 0.4)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     रद्द करें
                   </button>
@@ -2951,18 +3016,20 @@ const StudentStats = ({ onLogout }) => {
                       color: 'white',
                       border: 'none',
                       padding: '12px 24px',
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       fontSize: '14px',
                       fontWeight: 600,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px'
+                      gap: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
                     }}
                     onMouseOver={(e) => { 
-                      e.target.style.transform = 'translateY(-1px)'; 
-                      e.target.style.boxShadow = '0 8px 20px rgba(34, 197, 94, 0.4)';
+                      e.target.style.transform = 'translateY(-2px)'; 
+                      e.target.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.4)';
                     }}
                     onMouseOut={(e) => { 
                       e.target.style.transform = 'translateY(0)'; 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, GraduationCap, Building2, LogOut, Sprout } from 'lucide-react';
+import { BarChart3, GraduationCap, Building2, LogOut, Sprout, User } from 'lucide-react';
 import { clearUserSession } from '../utils/cookies';
 import '../styles/unified.css';
 
@@ -64,7 +64,7 @@ const Sidebar = ({ onLogout }) => {
       <div className="sidebar-admin-info">
         <div className="sidebar-admin-content">
           <div className="sidebar-admin-avatar">
-            👤
+            <User size={20} color="white" />
           </div>
           <div>
             <div className="sidebar-admin-name">

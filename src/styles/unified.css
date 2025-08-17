@@ -744,7 +744,7 @@ button span, button span * {
 
 .sidebar-admin-role {
   font-size: 12px;
-  color: var(--gray-400);
+  color: var(--white);
 }
 
 .sidebar-logout {
@@ -1960,6 +1960,53 @@ button span, button span * {
   .info-boxes-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
+}
+
+/* ========================================
+   Student Action Buttons
+======================================== */
+.student-action-btn {
+  border: none !important;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: white;
+  outline: none !important;
+}
+
+.student-action-btn:hover {
+  transform: translateY(-2px);
+  animation: none !important;
+}
+
+.student-action-btn.view-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.student-action-btn.view-btn:hover {
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.student-action-btn.edit-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.student-action-btn.edit-btn:hover {
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.student-action-btn.photo-btn {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.student-action-btn.photo-btn:hover {
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
 /* ========================================

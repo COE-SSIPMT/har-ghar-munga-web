@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Plus, Eye, Edit, Building2, MapPin, User, Phone, Calendar, Check, AlertCircle, X, BarChart3 } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Building2, MapPin, User, Phone, Calendar, Check, AlertCircle, X, BarChart3, RotateCcw } from 'lucide-react';
 import '../styles/unified.css';
 import serverURL from './server';
 
 const AanganwadiStats = ({ onLogout }) => {
+  const navigate = useNavigate();
+  
   const [filters, setFilters] = useState({
     kp_id: '',
     ks_id: ''
   });
 
+  const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -18,6 +22,12 @@ const AanganwadiStats = ({ onLogout }) => {
   const [selectedKendra, setSelectedKendra] = useState(null);
   const [loading, setLoading] = useState(true);
   const [kendras, setKendras] = useState([]);
+  const [totalStats, setTotalStats] = useState({
+    totalKendras: 0,
+    activeKendras: 0,
+    totalStudents: 0,
+    activeStudents: 0
+  });
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 10,
@@ -28,11 +38,12 @@ const AanganwadiStats = ({ onLogout }) => {
     pariyojnas: [],
     sectors: []
   });
+  const [filteredSectors, setFilteredSectors] = useState([]);
   const [newKendra, setNewKendra] = useState({
+    kp_id: '',
+    ks_id: '',
     k_name: '',
     k_address: '',
-    ks_id: '',
-    kp_id: '',
     login_id: '',
     password: ''
   });
@@ -98,6 +109,49 @@ const AanganwadiStats = ({ onLogout }) => {
     }
   };
 
+  // Fetch total statistics for all filtered data (using dedicated stats API)
+  const fetchTotalStats = async () => {
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'get_stats');
+      
+      // Add filters
+      if (filters.kp_id) params.append('kp_id', filters.kp_id);
+      if (filters.ks_id) params.append('ks_id', filters.ks_id);
+      if (searchTerm.trim()) params.append('search', searchTerm.trim());
+
+      const response = await fetch(`${serverURL}api_kendras.php?${params}`);
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setTotalStats({
+          totalKendras: data.data.totalKendras || 0,
+          activeKendras: data.data.activeKendras || 0,
+          totalStudents: data.data.totalStudents || 0,
+          activeStudents: data.data.activeStudents || 0
+        });
+      } else {
+        console.error('Error fetching total stats:', data.message || 'Unknown error');
+        // Set default values if API fails
+        setTotalStats({
+          totalKendras: 0,
+          activeKendras: 0,
+          totalStudents: 0,
+          activeStudents: 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching total stats:', error);
+      // Set default values if fetch fails
+      setTotalStats({
+        totalKendras: 0,
+        activeKendras: 0,
+        totalStudents: 0,
+        activeStudents: 0
+      });
+    }
+  };
+
   // Fetch master data for dropdowns
   const fetchMasterData = async () => {
     try {
@@ -109,6 +163,9 @@ const AanganwadiStats = ({ onLogout }) => {
           pariyojnas: data.pariyojnas,
           sectors: data.sectors
         });
+        console.log('Master data loaded:');
+        console.log('Pariyojnas:', data.pariyojnas);
+        console.log('Sectors:', data.sectors);
       }
     } catch (error) {
       console.error('Error fetching master data:', error);
@@ -122,12 +179,14 @@ const AanganwadiStats = ({ onLogout }) => {
       setPagination(prev => ({ ...prev, currentPage: 1 }));
     } else {
       fetchKendras();
+      fetchTotalStats();
     }
   }, [filters, searchTerm]);
 
   // Fetch data when page changes
   useEffect(() => {
     fetchKendras();
+    fetchTotalStats();
   }, [pagination.currentPage]);
 
   useEffect(() => {
@@ -156,9 +215,7 @@ const AanganwadiStats = ({ onLogout }) => {
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    // Reset to first page when search changes
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setSearchInput(e.target.value);
   };
 
   // Pagination functions
@@ -181,25 +238,25 @@ const AanganwadiStats = ({ onLogout }) => {
   const infoBoxData = [
     {
       title: 'कुल केंद्र',
-      count: filteredKendras.length.toString(),
+      count: totalStats.totalKendras.toString(),
       icon: <Building2 size={24} />,
       color: 'blue'
     },
     {
       title: 'सक्रिय केंद्र',
-      count: filteredKendras.filter(k => k.active_students > 0).length.toString(),
+      count: totalStats.activeKendras.toString(),
       icon: <Check size={24} />,
       color: 'green'
     },
     {
       title: 'कुल छात्र',
-      count: filteredKendras.reduce((sum, k) => sum + k.total_students, 0).toString(),
+      count: totalStats.totalStudents.toString(),
       icon: <User size={24} />,
       color: 'brown'
     },
     {
       title: 'सक्रिय छात्र',
-      count: filteredKendras.reduce((sum, k) => sum + k.active_students, 0).toString(),
+      count: totalStats.activeStudents.toString(),
       icon: <BarChart3 size={24} />,
       color: 'light-brown'
     }
@@ -221,14 +278,7 @@ const AanganwadiStats = ({ onLogout }) => {
       
       if (data.success) {
         alert('✅ केंद्र सफलतापूर्वक जोड़ा गया!');
-        setNewKendra({
-          k_name: '',
-          k_address: '',
-          ks_id: '',
-          kp_id: '',
-          login_id: '',
-          password: ''
-        });
+        resetForm();
         setShowAddModal(false);
         fetchKendras(); // Refresh data
       } else {
@@ -250,10 +300,44 @@ const AanganwadiStats = ({ onLogout }) => {
   };
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
     setNewKendra({
       ...newKendra,
-      [e.target.name]: e.target.value
+      [name]: value,
+      // Reset sector when pariyojna changes
+      ...(name === 'kp_id' && { ks_id: '' })
     });
+
+    // Filter sectors based on selected pariyojna
+    if (name === 'kp_id') {
+      if (value) {
+        const filtered = masterData.sectors.filter(sector => 
+          sector.sp_id === parseInt(value)
+        );
+        setFilteredSectors(filtered);
+        console.log('Selected pariyojna ID:', value);
+        console.log('Available sectors:', masterData.sectors);
+        console.log('Filtered sectors:', filtered);
+      } else {
+        // Clear sectors when no pariyojna is selected
+        setFilteredSectors([]);
+        console.log('Pariyojna cleared, sectors reset');
+      }
+    }
+  };
+
+  // Reset form and filtered sectors
+  const resetForm = () => {
+    setNewKendra({
+      kp_id: '',
+      ks_id: '',
+      k_name: '',
+      k_address: '',
+      login_id: '',
+      password: ''
+    });
+    setFilteredSectors([]);
   };
 
   const handleEditInputChange = (e) => {
@@ -300,17 +384,35 @@ const AanganwadiStats = ({ onLogout }) => {
 
   const navigateToStudents = (kendra) => {
     // Store kendra details in localStorage for StudentStats to pick up
-    localStorage.setItem('selectedKendra', JSON.stringify({
+    const kendraData = {
       k_id: kendra.k_id,
       k_name: kendra.k_name,
-      sp_id: kendra.kp_id,
-      ss_id: kendra.ks_id,
-      sk_id: kendra.k_id
-    }));
+      sp_id: kendra.kp_id.toString(),  // Ensure string format
+      ss_id: kendra.ks_id.toString(),  // Ensure string format  
+      sk_id: kendra.k_id.toString()    // Ensure string format
+    };
+    console.log('Storing kendra data for navigation:', kendraData);
+    console.log('Original kendra object:', kendra);
+    localStorage.setItem('selectedKendra', JSON.stringify(kendraData));
     
-    // Navigate to StudentStats
-    window.location.href = '#/students';
+    // Navigate to StudentStats using React Router
+    navigate('/student-stats');
     setShowDetailModal(false);
+  };
+
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchMasterData(),
+        fetchKendras(),
+        fetchTotalStats()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getActivityColor = (active, total) => {
@@ -347,9 +449,46 @@ const AanganwadiStats = ({ onLogout }) => {
                 HarGhar Munga Project - Kendra Centers Portal
               </p>
             </div>
-            <div className="student-stats-status">
-              <span className="student-status-dot">●</span>
-              Live Database
+            <div className="student-stats-status-container">
+              <button 
+                onClick={refreshData}
+                className="refresh-btn"
+                disabled={loading}
+                title="पूरे डेटा को रीफ्रेश करें"
+                style={{
+                  background: '#16a34a',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginRight: '16px',
+                  transition: 'all 0.3s ease',
+                  opacity: loading ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.target.style.background = '#15803d';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#16a34a';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                <RotateCcw className={`w-4 h-4 ${loading ? 'spin' : ''}`} />
+                {loading ? 'रीफ्रेश हो रहा है...' : 'रीफ्रेश करें'}
+              </button>
+              <div className="student-stats-status">
+                <span className="student-status-dot">●</span>
+                Live Database
+              </div>
             </div>
           </div>
         </div>
@@ -430,12 +569,17 @@ const AanganwadiStats = ({ onLogout }) => {
                 <input
                   type="text"
                   placeholder="केंद्र का नाम, पता, परियोजना, सेक्टर या लॉगिन ID से खोजें..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchInput}
+                  onChange={handleSearchChange}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      setSearchTerm(searchInput.trim());
+                      setPagination(prev => ({ ...prev, currentPage: 1 }));
+                    }
+                  }}
                   style={{ 
                     width: '100%', 
                     padding: '16px 24px', 
-                    paddingRight: '60px', 
                     border: '2px solid #e2e8f0', 
                     borderRadius: '12px', 
                     fontSize: '16px', 
@@ -455,39 +599,11 @@ const AanganwadiStats = ({ onLogout }) => {
                     e.target.style.boxShadow = 'none'; 
                   }}
                 />
-                {searchTerm && (
-                  <button 
-                    onClick={() => setSearchTerm('')}
-                    title="खोज साफ़ करें"
-                    style={{ 
-                      position: 'absolute', 
-                      right: '16px', 
-                      top: '50%', 
-                      transform: 'translateY(-50%)', 
-                      background: '#ef4444', 
-                      border: 'none', 
-                      borderRadius: '8px',
-                      width: '32px',
-                      height: '32px',
-                      fontSize: '16px', 
-                      color: 'white', 
-                      cursor: 'pointer', 
-                      fontWeight: 'bold',
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      transition: 'all 0.3s ease' 
-                    }}
-                    onMouseOver={(e) => { e.target.style.background = '#dc2626'; }}
-                    onMouseOut={(e) => { e.target.style.background = '#ef4444'; }}
-                  >
-                    <X size={18} color="white" />
-                  </button>
-                )}
               </div>
               
               <button
                 onClick={() => {
+                  setSearchTerm(searchInput.trim());
                   setPagination(prev => ({ ...prev, currentPage: 1 }));
                 }}
                 style={{
@@ -585,6 +701,7 @@ const AanganwadiStats = ({ onLogout }) => {
               <button
                 onClick={() => {
                   setFilters({ kp_id: '', ks_id: '' });
+                  setSearchInput('');
                   setSearchTerm('');
                   setPagination(prev => ({ ...prev, currentPage: 1 }));
                 }}
@@ -682,13 +799,13 @@ const AanganwadiStats = ({ onLogout }) => {
               fontSize: '16px',
               fontWeight: 700,
               display: 'grid',
-              gridTemplateColumns: '60px 1fr 180px 140px 110px 110px 120px 160px',
+              gridTemplateColumns: '60px 1fr 180px 140px 110px 110px 120px 200px',
               gap: '16px',
               alignItems: 'center'
             }}>
-              <div>ID</div>
+              <div>क्रम</div>
               <div>केंद्र का नाम</div>
-              <div>पता</div>
+              <div>विवरण</div>
               <div>परियोजना</div>
               <div>सेक्टर</div>
               <div>छात्र संख्या</div>
@@ -734,7 +851,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       padding: '20px',
                       borderBottom: index === filteredKendras.length - 1 ? 'none' : '1px solid #e2e8f0',
                       display: 'grid',
-                      gridTemplateColumns: '60px 1fr 180px 140px 110px 110px 120px 160px',
+                      gridTemplateColumns: '60px 1fr 180px 140px 110px 110px 120px 200px',
                       gap: '16px',
                       alignItems: 'center',
                       transition: 'all 0.3s ease'
@@ -748,7 +865,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       e.currentTarget.style.transform = 'scale(1)';
                     }}
                   >
-                    {/* ID Column */}
+                    {/* Serial Number Column */}
                     <div style={{
                       background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                       color: 'white',
@@ -758,7 +875,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       fontWeight: 700,
                       textAlign: 'center'
                     }}>
-                      {kendra.k_id}
+                      {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
                     </div>
 
                     {/* Name Column */}
@@ -781,7 +898,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       </div>
                     </div>
 
-                    {/* Address Column */}
+                    {/* Address Column - Format: pariyojna,sector,kendra name */}
                     <div style={{
                       fontSize: '13px',
                       color: '#374151',
@@ -793,7 +910,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical'
                     }}>
-                      📍 {kendra.k_address}
+                      📍 {kendra.pariyojna_name},{kendra.sector_name},{kendra.k_name}
                     </div>
 
                     {/* Project Column */}
@@ -814,42 +931,24 @@ const AanganwadiStats = ({ onLogout }) => {
                     <div style={{
                       fontSize: '12px',
                       fontWeight: 600,
-                      color: getActivityColor(kendra.active_students, kendra.total_students),
-                      background: getActivityBg(kendra.active_students, kendra.total_students),
+                      color: '#dc2626',
+                      background: '#fef2f2',
                       padding: '8px 12px',
                       borderRadius: '8px',
                       textAlign: 'center',
-                      border: `1px solid ${getActivityColor(kendra.active_students, kendra.total_students)}30`
+                      border: '1px solid #fecaca'
                     }}>
                       {kendra.sector_name}
                     </div>
 
-                    {/* Students Column */}
+                    {/* Students Column - Only total count */}
                     <div style={{ textAlign: 'center' }}>
                       <div style={{
                         fontSize: '14px',
                         fontWeight: 700,
-                        color: '#1e293b',
-                        marginBottom: '4px'
+                        color: '#1e293b'
                       }}>
-                        {kendra.active_students} / {kendra.total_students}
-                      </div>
-                      <div style={{
-                        width: '100%',
-                        height: '6px',
-                        background: '#e2e8f0',
-                        borderRadius: '3px',
-                        overflow: 'hidden'
-                      }}>
-                        <div 
-                          style={{
-                            width: `${kendra.total_students > 0 ? (kendra.active_students / kendra.total_students) * 100 : 0}%`,
-                            backgroundColor: getActivityColor(kendra.active_students, kendra.total_students),
-                            height: '100%',
-                            borderRadius: '3px',
-                            transition: 'all 0.5s ease'
-                          }}
-                        ></div>
+                        {kendra.total_students}
                       </div>
                     </div>
 
@@ -944,6 +1043,35 @@ const AanganwadiStats = ({ onLogout }) => {
                       >
                         <Edit size={14} />
                         Edit
+                      </button>
+                      <button
+                        onClick={() => navigateToStudents(kendra)}
+                        style={{
+                          background: 'linear-gradient(135deg, #16a34a, #15803d)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 8px 25px rgba(22, 163, 74, 0.4)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                        title="छात्र देखें"
+                      >
+                        <User size={14} />
+                        छात्र
                       </button>
                     </div>
                   </div>
@@ -1295,8 +1423,8 @@ const AanganwadiStats = ({ onLogout }) => {
                       </div>
                     </div>
                     <div>
-                      <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>पूरा पता</label>
-                      <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>📍 {selectedKendra.k_address}</div>
+                      <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>विवरण</label>
+                      <div style={{ fontSize: '16px', color: '#1e293b', fontWeight: 600, marginTop: '4px' }}>📍 {selectedKendra.pariyojna_name},{selectedKendra.sector_name},{selectedKendra.k_name}</div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div>
@@ -1318,13 +1446,13 @@ const AanganwadiStats = ({ onLogout }) => {
                         <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>सेक्टर</label>
                         <div style={{ 
                           fontSize: '14px', 
-                          color: getActivityColor(selectedKendra.active_students, selectedKendra.total_students), 
+                          color: '#dc2626', 
                           fontWeight: 600, 
                           marginTop: '4px',
-                          background: getActivityBg(selectedKendra.active_students, selectedKendra.total_students),
+                          background: '#fef2f2',
                           padding: '8px 12px',
                           borderRadius: '8px',
-                          border: `1px solid ${getActivityColor(selectedKendra.active_students, selectedKendra.total_students)}30`
+                          border: '1px solid #fecaca'
                         }}>
                           {selectedKendra.sector_name}
                         </div>
@@ -1598,6 +1726,7 @@ const AanganwadiStats = ({ onLogout }) => {
                         fontSize: '14px',
                         fontWeight: 500,
                         background: '#f8fafc',
+                        color: '#1e293b',
                         transition: 'all 0.3s ease',
                         outline: 'none',
                         boxSizing: 'border-box'
@@ -1639,6 +1768,7 @@ const AanganwadiStats = ({ onLogout }) => {
                         fontSize: '14px',
                         fontWeight: 500,
                         background: '#f8fafc',
+                        color: '#1e293b',
                         transition: 'all 0.3s ease',
                         outline: 'none',
                         boxSizing: 'border-box'
@@ -1680,6 +1810,7 @@ const AanganwadiStats = ({ onLogout }) => {
                         fontSize: '14px',
                         fontWeight: 500,
                         background: '#f8fafc',
+                        color: '#1e293b',
                         transition: 'all 0.3s ease',
                         outline: 'none',
                         boxSizing: 'border-box'
@@ -1715,6 +1846,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       fontSize: '14px',
                       fontWeight: 500,
                       background: '#f8fafc',
+                      color: '#1e293b',
                       transition: 'all 0.3s ease',
                       outline: 'none',
                       boxSizing: 'border-box'
@@ -1748,6 +1880,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       fontSize: '14px',
                       fontWeight: 500,
                       background: '#f8fafc',
+                      color: '#1e293b',
                       transition: 'all 0.3s ease',
                       outline: 'none',
                       minHeight: '80px',
@@ -1785,6 +1918,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       fontSize: '14px',
                       fontWeight: 500,
                       background: '#f8fafc',
+                      color: '#1e293b',
                       transition: 'all 0.3s ease',
                       outline: 'none',
                       boxSizing: 'border-box'
@@ -1874,7 +2008,7 @@ const AanganwadiStats = ({ onLogout }) => {
             justifyContent: 'center',
             zIndex: 1000,
             backdropFilter: 'blur(4px)'
-          }} onClick={() => setShowAddModal(false)}>
+          }} onClick={() => { resetForm(); setShowAddModal(false); }}>
             <div style={{
               background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
               borderRadius: '20px',
@@ -1920,7 +2054,7 @@ const AanganwadiStats = ({ onLogout }) => {
                   नया केंद्र जोड़ें
                 </h2>
                 <button
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => { resetForm(); setShowAddModal(false); }}
                   style={{
                     background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                     color: 'white',
@@ -1951,101 +2085,7 @@ const AanganwadiStats = ({ onLogout }) => {
 
               {/* Modal Form */}
               <form onSubmit={handleAddKendra} style={{ display: 'grid', gap: '24px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <div>
-                    <label style={{ 
-                      display: 'block', 
-                      fontSize: '14px', 
-                      fontWeight: 600, 
-                      color: '#1e293b', 
-                      marginBottom: '8px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}>
-                      केंद्र आईडी *
-                    </label>
-                    <input
-                      type="text"
-                      name="k_id"
-                      value={newKendra.k_id}
-                      onChange={handleInputChange}
-                      placeholder="उदाहरण: K001"
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid #e2e8f0',
-                        borderRadius: '12px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        background: '#f8fafc',
-                        transition: 'all 0.3s ease',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = '#0ea5e9';
-                        e.target.style.background = '#ffffff';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = '#e2e8f0';
-                        e.target.style.background = '#f8fafc';
-                        e.target.style.boxShadow = 'none';
-                      }}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ 
-                      display: 'block', 
-                      fontSize: '14px', 
-                      fontWeight: 600, 
-                      color: '#1e293b', 
-                      marginBottom: '8px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}>
-                      सेक्टर *
-                    </label>
-                    <select
-                      name="ks_id"
-                      value={newKendra.ks_id}
-                      onChange={handleInputChange}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid #e2e8f0',
-                        borderRadius: '12px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        background: '#f8fafc',
-                        transition: 'all 0.3s ease',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = '#0ea5e9';
-                        e.target.style.background = '#ffffff';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = '#e2e8f0';
-                        e.target.style.background = '#f8fafc';
-                        e.target.style.boxShadow = 'none';
-                      }}
-                      required
-                    >
-                      <option value="">सेक्टर चुनें</option>
-                      {masterData.sectors.map(sector => (
-                        <option key={sector.s_id} value={sector.s_id}>
-                          {sector.s_name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
+                {/* First Row: Pariyojna and Sector */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <div>
                     <label style={{ 
@@ -2070,6 +2110,7 @@ const AanganwadiStats = ({ onLogout }) => {
                         borderRadius: '12px',
                         fontSize: '14px',
                         fontWeight: 500,
+                        color: '#1e293b',
                         background: '#f8fafc',
                         transition: 'all 0.3s ease',
                         outline: 'none',
@@ -2106,14 +2147,13 @@ const AanganwadiStats = ({ onLogout }) => {
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px'
                     }}>
-                      लॉगिन आईडी *
+                      सेक्टर *
                     </label>
-                    <input
-                      type="text"
-                      name="login_id"
-                      value={newKendra.login_id}
+                    <select
+                      name="ks_id"
+                      value={newKendra.ks_id}
                       onChange={handleInputChange}
-                      placeholder="उदाहरण: admin001"
+                      disabled={!newKendra.kp_id}
                       style={{
                         width: '100%',
                         padding: '12px 16px',
@@ -2121,10 +2161,12 @@ const AanganwadiStats = ({ onLogout }) => {
                         borderRadius: '12px',
                         fontSize: '14px',
                         fontWeight: 500,
-                        background: '#f8fafc',
+                        color: '#1e293b',
+                        background: newKendra.kp_id ? '#f8fafc' : '#f3f4f6',
                         transition: 'all 0.3s ease',
                         outline: 'none',
-                        boxSizing: 'border-box'
+                        boxSizing: 'border-box',
+                        cursor: newKendra.kp_id ? 'pointer' : 'not-allowed'
                       }}
                       onFocus={(e) => {
                         e.target.style.borderColor = '#0ea5e9';
@@ -2137,10 +2179,20 @@ const AanganwadiStats = ({ onLogout }) => {
                         e.target.style.boxShadow = 'none';
                       }}
                       required
-                    />
+                    >
+                      <option value="">
+                        {newKendra.kp_id ? 'सेक्टर चुनें' : 'पहले परियोजना चुनें'}
+                      </option>
+                      {filteredSectors.map(sector => (
+                        <option key={sector.s_id} value={sector.s_id}>
+                          {sector.s_name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
+                {/* Second Row: Kendra Name */}
                 <div>
                   <label style={{ 
                     display: 'block', 
@@ -2166,6 +2218,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       borderRadius: '12px',
                       fontSize: '14px',
                       fontWeight: 500,
+                      color: '#1e293b',
                       background: '#f8fafc',
                       transition: 'all 0.3s ease',
                       outline: 'none',
@@ -2185,6 +2238,7 @@ const AanganwadiStats = ({ onLogout }) => {
                   />
                 </div>
 
+                {/* Third Row: Address */}
                 <div>
                   <label style={{ 
                     display: 'block', 
@@ -2209,6 +2263,7 @@ const AanganwadiStats = ({ onLogout }) => {
                       borderRadius: '12px',
                       fontSize: '14px',
                       fontWeight: 500,
+                      color: '#1e293b',
                       background: '#f8fafc',
                       transition: 'all 0.3s ease',
                       outline: 'none',
@@ -2231,48 +2286,97 @@ const AanganwadiStats = ({ onLogout }) => {
                   />
                 </div>
 
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '14px', 
-                    fontWeight: 600, 
-                    color: '#1e293b', 
-                    marginBottom: '8px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    पासवर्ड *
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={newKendra.password}
-                    onChange={handleInputChange}
-                    placeholder="सुरक्षित पासवर्ड दर्ज करें"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '12px',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      background: '#f8fafc',
-                      transition: 'all 0.3s ease',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#0ea5e9';
-                      e.target.style.background = '#ffffff';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e2e8f0';
-                      e.target.style.background = '#f8fafc';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                    required
-                  />
+                {/* Fourth Row: Login ID and Password */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: '#1e293b', 
+                      marginBottom: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      लॉगिन आईडी *
+                    </label>
+                    <input
+                      type="text"
+                      name="login_id"
+                      value={newKendra.login_id}
+                      onChange={handleInputChange}
+                      placeholder="उदाहरण: admin001"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: '#1e293b',
+                        background: '#f8fafc',
+                        transition: 'all 0.3s ease',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#0ea5e9';
+                        e.target.style.background = '#ffffff';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e2e8f0';
+                        e.target.style.background = '#f8fafc';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: '#1e293b', 
+                      marginBottom: '8px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      पासवर्ड *
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={newKendra.password}
+                      onChange={handleInputChange}
+                      placeholder="सुरक्षित पासवर्ड दर्ज करें"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: '#1e293b',
+                        background: '#f8fafc',
+                        transition: 'all 0.3s ease',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#0ea5e9';
+                        e.target.style.background = '#ffffff';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e2e8f0';
+                        e.target.style.background = '#f8fafc';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                      required
+                    />
+                  </div>
                 </div>
 
                 {/* Modal Actions */}
@@ -2286,7 +2390,7 @@ const AanganwadiStats = ({ onLogout }) => {
                 }}>
                   <button
                     type="button"
-                    onClick={() => setShowAddModal(false)}
+                    onClick={() => { resetForm(); setShowAddModal(false); }}
                     style={{
                       padding: '12px 24px',
                       background: 'linear-gradient(135deg, #6b7280, #9ca3af)',
