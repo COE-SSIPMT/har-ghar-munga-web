@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Lock, Eye, EyeOff, Sprout } from 'lucide-react';
+import { Lock, Eye, EyeOff, Sprout, Shield, Building, Rocket, Flag } from 'lucide-react';
 import logoImage from '/images/logo.jpg';
-// Styles merged from Login.css
+import '../styles/unified.css';
 
 const Login = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({
@@ -99,26 +99,33 @@ const Login = ({ onLogin }) => {
           
           <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
             <div style={{
-              width: '210px',
-              height: '127px',
+              width: '280px',
+              height: '170px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: '30px',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05))',
               borderRadius: '25px',
-              background: 'rgba(255, 255, 255, 0.1)',
+              padding: '12px',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
+              WebkitBackdropFilter: 'blur(10px)',
+              transition: 'all 0.3s ease',
+              animation: 'logoGlow 4s ease-in-out infinite'
             }}>
               <img 
                 src={logoImage} 
                 alt="HarGhar Munga Logo" 
                 style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '20px'
+                  width: '92%',
+                  height: '92%',
+                  objectFit: 'cover',
+                  borderRadius: '18px',
+                  transition: 'all 0.3s ease',
+                  filter: 'brightness(1.1) contrast(1.1)',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)'
                 }}
                 onError={(e) => {
                   console.log('Image failed to load, trying PNG version');
@@ -143,63 +150,90 @@ const Login = ({ onLogin }) => {
             
             <h1 style={{ 
               color: 'white', 
-              fontSize: '42px', 
-              fontWeight: 700, 
+              fontSize: '48px', 
+              fontWeight: 800, 
               marginBottom: '16px',
-              textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
-              lineHeight: '1.2'
+              textShadow: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 255, 255, 0.2)',
+              lineHeight: '1.2',
+              background: 'linear-gradient(45deg, #ffffff, #f0fdf4)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              animation: 'textGlow 3s ease-in-out infinite alternate'
             }}>HarGhar Munga</h1>
             
             <div style={{
               width: '50px',
               height: '3px',
-              background: 'rgba(255, 255, 255, 0.6)',
+              background: 'linear-gradient(90deg, rgba(255,255,255,0.8), rgba(34,197,94,0.8), rgba(255,255,255,0.8))',
               borderRadius: '2px',
-              margin: '0 auto 20px auto'
+              margin: '0 auto 20px auto',
+              animation: 'shimmer 2s ease-in-out infinite'
             }}></div>
             
             <p style={{ 
-              color: 'rgba(255, 255, 255, 0.9)', 
-              fontSize: '18px', 
-              fontWeight: 500,
-              marginBottom: '16px'
-            }}>Admin Dashboard</p>
-            
-            <p style={{ 
-              color: 'rgba(255, 255, 255, 0.7)', 
-              fontSize: '15px', 
-              fontWeight: 400,
-              lineHeight: '1.5',
-              maxWidth: '280px',
-              marginBottom: '24px'
+              color: 'rgba(255, 255, 255, 0.95)', 
+              fontSize: '20px', 
+              fontWeight: 600,
+              marginBottom: '16px',
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+              animation: 'fadeInUp 1s ease-out 0.5s both',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px'
             }}>
-              Secure access to manage student statistics, Aanganwadi centers, and administrative operations
+              <Building size={22} color="rgba(255, 255, 255, 0.9)" />
+              Admin Dashboard
             </p>
             
             {/* Powered by section */}
             <div style={{
               marginTop: 'auto',
-              paddingTop: '20px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.2)',
-              textAlign: 'center'
+              paddingTop: '25px',
+              borderTop: '2px solid rgba(255, 255, 255, 0.3)',
+              textAlign: 'center',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
+              borderRadius: '15px',
+              padding: '20px',
+              backdropFilter: 'blur(5px)',
+              WebkitBackdropFilter: 'blur(5px)',
+              animation: 'fadeInUp 1s ease-out 1s both'
             }}>
               <p style={{
-                color: 'rgba(255, 255, 255, 0.8)',
-                fontSize: '12px',
-                fontWeight: 500,
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontSize: '13px',
+                fontWeight: 600,
                 margin: 0,
-                letterSpacing: '0.4px'
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}>
+                <Flag size={16} color="rgba(255, 255, 255, 0.9)" />
                 Powered by
               </p>
               <p style={{
-                color: 'rgba(255, 255, 255, 0.95)',
-                fontSize: '14px',
-                fontWeight: 600,
-                margin: '3px 0 0 0',
-                letterSpacing: '0.6px'
+                color: 'rgba(255, 255, 255, 1)',
+                fontSize: '16px',
+                fontWeight: 700,
+                margin: '5px 0 0 0',
+                letterSpacing: '0.8px',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
               }}>
                 SSIPMT Raipur
+              </p>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: '11px',
+                fontWeight: 500,
+                margin: '3px 0 0 0',
+                letterSpacing: '0.4px',
+                opacity: 0.9
+              }}>
+                Version 1.0.0 • छत्तीसगढ़ शासन
               </p>
             </div>
           </div>
@@ -214,15 +248,26 @@ const Login = ({ onLogin }) => {
           justifyContent: 'center'
         }}>
           <div style={{ maxWidth: '360px', margin: '0 auto', width: '100%' }}>
-            <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
               <h2 style={{ 
-                color: '#2c3e50', 
-                fontSize: '26px', 
-                fontWeight: 700, 
-                marginBottom: '8px'
-              }}>Welcome Back</h2>
-              <p style={{ color: '#64748b', fontSize: '15px', fontWeight: 500 }}>
-                Sign in to your account
+                color: '#1e293b', 
+                fontSize: '30px', 
+                fontWeight: 800, 
+                marginBottom: '12px',
+                background: 'linear-gradient(135deg, #065f46, #059669)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px'
+              }}>
+                <Lock size={28} color="#059669" />
+                Welcome Back
+              </h2>
+              <p style={{ color: '#64748b', fontSize: '16px', fontWeight: 600 }}>
+                Secure Government Portal Access
               </p>
             </div>
             
@@ -346,18 +391,22 @@ const Login = ({ onLogin }) => {
                 type="submit" 
                 style={{ 
                   width: '100%', 
-                  padding: '14px', 
+                  padding: '18px 24px', 
                   fontSize: '16px', 
-                  fontWeight: 600, 
-                  background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)', 
+                  fontWeight: 700, 
+                  background: 'linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%)', 
                   border: 'none', 
-                  borderRadius: '12px', 
+                  borderRadius: '16px', 
                   color: '#fff', 
                   cursor: 'pointer', 
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 6px 20px rgba(6, 95, 70, 0.3)',
+                  transition: 'all 0.4s ease',
+                  boxShadow: '0 10px 35px rgba(6, 95, 70, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.25)',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  textTransform: 'none',
+                  letterSpacing: '0.3px',
+                  minHeight: '58px',
+                  outline: 'none'
                 }}
                 onMouseOver={(e) => { 
                   e.target.style.transform = 'translateY(-2px)'; 
@@ -365,7 +414,7 @@ const Login = ({ onLogin }) => {
                 }}
                 onMouseOut={(e) => { 
                   e.target.style.transform = 'translateY(0)'; 
-                  e.target.style.boxShadow = '0 6px 20px rgba(6, 95, 70, 0.3)';
+                  // e.target.style.boxShadow = '0 6px 20px rgba(6, 95, 70, 0.3)';
                 }}
               >
                 <span style={{ position: 'relative', zIndex: 1 }}>Sign In to Dashboard</span>
@@ -373,39 +422,41 @@ const Login = ({ onLogin }) => {
             </form>
             
             {/* Additional UI elements */}
-            <div style={{ textAlign: 'center', marginTop: '28px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <Lock size={16} />
-                Secure Admin Access
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '32px', 
+              paddingTop: '24px', 
+              borderTop: '2px solid #e2e8f0',
+              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(16, 185, 129, 0.05))',
+              borderRadius: '12px',
+              padding: '20px'
+            }}>
+              <p style={{ 
+                color: '#059669', 
+                fontSize: '15px', 
+                margin: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '10px',
+                fontWeight: 600
+              }}>
+                {/* <Lock size={18} /> */}
+                <Shield size={18} color="#059669" />
+                Secure Government Access
+              </p>
+              <p style={{
+                color: '#64748b',
+                fontSize: '12px',
+                margin: '8px 0 0 0',
+                fontStyle: 'italic'
+              }}>
+                Protected by Advanced Encryption
               </p>
             </div>
           </div>
         </div>
       </div>
-      
-      <style>{`
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 };

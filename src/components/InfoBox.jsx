@@ -1,5 +1,5 @@
 import React from 'react';
-// Styles merged from InfoBox.css
+import '../styles/unified.css';
 
 const InfoBox = ({ title, count, icon, color }) => {
   const getColorStyles = (color) => {
@@ -47,192 +47,46 @@ const InfoBox = ({ title, count, icon, color }) => {
   const colorStyles = getColorStyles(color);
 
   return (
-    <div 
-      style={{ 
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '16px',
-        padding: '20px',
-        boxShadow: `0 10px 30px ${colorStyles.shadow}`,
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        transition: 'all 0.3s ease',
-        position: 'relative',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        animation: 'fadeInUp 0.8s ease-out'
-      }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.transform = 'translateY(-6px) scale(1.02)';
-        e.currentTarget.style.boxShadow = `0 20px 50px ${colorStyles.shadow}`;
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.transform = 'translateY(0) scale(1)';
-        e.currentTarget.style.boxShadow = `0 10px 30px ${colorStyles.shadow}`;
-      }}
-    >
+    <div className={`info-box ${color}`}>
       {/* Background decoration */}
-      <div 
-        style={{ 
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '70px',
-          height: '70px',
-          background: colorStyles.gradient,
-          borderRadius: '50%',
-          opacity: 0.1,
-          transform: 'translate(25px, -25px)'
-        }}
-      />
+      <div className="info-box-decoration"></div>
       
       {/* Top border indicator */}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          height: '4px', 
-          background: colorStyles.gradient
-        }}
-      />
+      <div className="info-box-border"></div>
       
       {/* Icon container */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '48px',
-        height: '48px',
-        background: colorStyles.gradient,
-        borderRadius: '12px',
-        marginBottom: '16px',
-        fontSize: '20px',
-        color: 'white',
-        boxShadow: `0 6px 20px ${colorStyles.shadow}`,
-        position: 'relative',
-        zIndex: 2
-      }}>
+      <div className="info-box-icon">
         {icon}
       </div>
       
       {/* Content */}
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <h3 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#64748b',
-          marginBottom: '6px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          lineHeight: 1.4
-        }}>
+      <div className="info-box-content">
+        <h3 className="info-box-title">
           {title}
         </h3>
         
-        <div style={{
-          fontSize: '28px',
-          fontWeight: 800,
-          color: '#1e293b',
-          marginBottom: '12px',
-          lineHeight: 1.1,
-          background: colorStyles.gradient,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          animation: 'countUp 1.5s ease-out'
-        }}>
+        <div className="info-box-count">
           {count}
         </div>
 
         {/* Progress bar */}
-        <div style={{
-          width: '100%',
-          height: '3px',
-          background: 'rgba(0, 0, 0, 0.1)',
-          borderRadius: '2px',
-          marginBottom: '12px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            width: '75%',
-            height: '100%',
-            background: colorStyles.gradient,
-            borderRadius: '2px',
-            animation: 'progressFill 2s ease-out'
-          }}></div>
+        <div className="info-box-progress">
+          <div className="info-box-progress-bar"></div>
         </div>
 
         {/* Status */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <span style={{
-            fontSize: '11px',
-            color: '#64748b',
-            fontWeight: 500
-          }}>
+        <div className="info-box-status">
+          <span className="info-box-status-label">
             Live Data
           </span>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            <div style={{
-              width: '5px',
-              height: '5px',
-              background: '#22c55e',
-              borderRadius: '50%',
-              animation: 'pulse 2s infinite'
-            }}></div>
-            <span style={{
-              fontSize: '11px',
-              color: '#22c55e',
-              fontWeight: 600
-            }}>
+          <div className="info-box-status-indicator">
+            <div className="info-box-status-dot"></div>
+            <span className="info-box-status-text">
               Active
             </span>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes countUp {
-          from {
-            opacity: 0;
-            transform: scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        @keyframes progressFill {
-          from { width: 0%; }
-          to { width: 75%; }
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </div>
   );
 };

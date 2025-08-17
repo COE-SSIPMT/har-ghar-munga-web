@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
 import { Search, Eye, Edit, Baby, X, Phone, User, Weight, Building, AlertTriangle, FileText, Scale, MapPin, Ruler, Calendar, Activity, Hospital, Home } from 'lucide-react';
-// Styles merged from StudentStats.css
+import '../styles/unified.css';
 
 const StudentStats = ({ onLogout }) => {
   const [filters, setFilters] = useState({
@@ -300,84 +300,35 @@ const StudentStats = ({ onLogout }) => {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-      fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
-    }}>
+    <div className="student-stats-container">
       <Sidebar onLogout={onLogout} />
       
-      <main style={{ 
-        flex: 1, 
-        marginLeft: '260px', 
-        padding: '120px 32px 32px 32px',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)'
-      }}>
+      <main className="student-stats-main">
         {/* Government Header */}
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: '260px', 
-          right: 0, 
-          background: 'linear-gradient(135deg, #166534 0%, #15803d 100%)',
-          padding: '20px 32px',
-          borderBottom: '3px solid #22c55e',
-          zIndex: 50,
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="student-stats-header">
+          <div className="student-stats-header-content">
             <div>
-              <h1 style={{ 
-                fontSize: '28px', 
-                fontWeight: 700, 
-                color: '#ffffff',
-                margin: '0 0 4px 0',
-                letterSpacing: '0.5px'
-              }}>
+              <h1 className="student-stats-title">
                 छत्तीसगढ़ शासन | Student Management System
               </h1>
-              <p style={{ 
-                fontSize: '14px', 
-                color: '#cbd5e1', 
-                margin: 0,
-                fontWeight: 500
-              }}>
+              <p className="student-stats-subtitle">
                 HarGhar Munga Project - Student Statistics Portal
               </p>
             </div>
-            <div style={{
-              background: 'rgba(14, 165, 233, 0.2)',
-              padding: '12px 20px',
-              borderRadius: '8px',
-              border: '1px solid rgba(14, 165, 233, 0.3)',
-              color: '#0ea5e9',
-              fontSize: '14px',
-              fontWeight: 600
-            }}>
-              <span style={{ color: '#22c55e', marginRight: '8px' }}>●</span>
+            <div className="student-stats-status">
+              <span className="student-status-dot">●</span>
               Live Data
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div style={{ marginBottom: '32px', width: '100%', background: 'rgba(255, 255, 255, 0.95)', padding: '24px', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)', border: '2px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '20px'
-            }}>
+        <div className="filters-section">
+          <div className="filters-header">
+            <div className="filters-icon">
               <Search size={20} color="white" />
             </div>
-            <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b', margin: 0 }}>खोज और फ़िल्टर</h3>
+            <h3 className="filters-title">खोज और फ़िल्टर</h3>
           </div>
           
           {/* Search Bar */}
