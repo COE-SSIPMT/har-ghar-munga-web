@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import InfoBox from '../components/InfoBox';
-import { Search, Plus, Eye, Edit, Building2, MapPin, User, Users, Phone, Calendar, Check, AlertCircle, X, BarChart3, RotateCcw, Download, Lock } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Building2, MapPin, User, Users, Phone, Calendar, Check, AlertCircle, X, BarChart3, RotateCcw, Download, Lock, Camera } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import '../styles/unified.css';
 import serverURL from './server';
@@ -20,7 +20,10 @@ const AanganwadiStats = ({ onLogout }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [selectedKendra, setSelectedKendra] = useState(null);
+  const [kendraPhotos, setKendraPhotos] = useState([]);
+  const [photoLoading, setPhotoLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [kendras, setKendras] = useState([]);
   const [totalStats, setTotalStats] = useState({
@@ -170,6 +173,31 @@ const AanganwadiStats = ({ onLogout }) => {
       }
     } catch (error) {
       console.error('Error fetching master data:', error);
+    }
+  };
+
+  // Fetch kendra plant photos
+  const fetchKendraPhotos = async (kendraId) => {
+    setPhotoLoading(true);
+    try {
+      const response = await fetch(`${serverURL}kendra_photo_web.php?action=get_kendra_photos&k_id=${kendraId}`);
+      const data = await response.json();
+      
+      console.log('Photo API Response:', data); // Debug log
+      
+      if (data.success) {
+        // data.data contains the response from PHP sendSuccess function
+        setKendraPhotos(data.data.photos || []);
+        console.log('Photos set:', data.data.photos);
+      } else {
+        setKendraPhotos([]);
+        console.error('Error fetching photos:', data.message || data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching kendra photos:', error);
+      setKendraPhotos([]);
+    } finally {
+      setPhotoLoading(false);
     }
   };
 
@@ -399,6 +427,18 @@ const AanganwadiStats = ({ onLogout }) => {
     // Navigate to StudentStats using React Router
     navigate('/student-stats');
     setShowDetailModal(false);
+  };
+
+  const handleOpenPhotoModal = async (kendra) => {
+    setSelectedKendra(kendra);
+    setShowPhotoModal(true);
+    await fetchKendraPhotos(kendra.k_id);
+  };
+
+  const handleClosePhotoModal = () => {
+    setShowPhotoModal(false);
+    setSelectedKendra(null);
+    setKendraPhotos([]);
   };
 
   const refreshData = async () => {
@@ -1176,7 +1216,6 @@ const AanganwadiStats = ({ onLogout }) => {
                         title="विवरण देखें"
                       >
                         <Eye size={14} />
-                        विवरण
                       </button>
                       <button
                         onClick={() => {
@@ -1209,7 +1248,6 @@ const AanganwadiStats = ({ onLogout }) => {
                         title="संपादित करें"
                       >
                         <Edit size={14} />
-                        Edit
                       </button>
                       <button
                         onClick={() => navigateToStudents(kendra)}
@@ -1231,7 +1269,27 @@ const AanganwadiStats = ({ onLogout }) => {
                         title="छात्र देखें"
                       >
                         <User size={14} />
-                        छात्र
+                      </button>
+                      <button
+                        onClick={() => handleOpenPhotoModal(kendra)}
+                        style={{
+                          background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        className="action-btn action-btn-photo"
+                        title="पौधों की तस्वीरें देखें"
+                      >
+                        <Camera size={14} />
                       </button>
                     </div>
                   </div>
@@ -2611,6 +2669,288 @@ const AanganwadiStats = ({ onLogout }) => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Photo Modal */}
+        {showPhotoModal && selectedKendra && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '20px'
+            }}
+            onClick={handleClosePhotoModal}
+          >
+            <div 
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                width: '90%',
+                maxWidth: '1200px',
+                maxHeight: '90vh',
+                overflow: 'hidden',
+                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+                position: 'relative'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                color: 'white',
+                padding: '24px 32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <div>
+                  <h2 style={{
+                    margin: '0 0 8px 0',
+                    fontSize: '24px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <Camera size={28} />
+                    पौधों की तस्वीरें
+                  </h2>
+                  <p style={{
+                    margin: 0,
+                    fontSize: '16px',
+                    opacity: 0.9,
+                    fontWeight: 500
+                  }}>
+                    केंद्र: {selectedKendra.k_name}
+                  </p>
+                </div>
+                <button
+                  onClick={handleClosePhotoModal}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '44px',
+                    height: '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  title="बंद करें"
+                >
+                  <X size={20} color="white" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div style={{
+                padding: '32px',
+                maxHeight: 'calc(90vh - 120px)',
+                overflowY: 'auto'
+              }}>
+                {photoLoading ? (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '60px 20px',
+                    gap: '20px'
+                  }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      border: '4px solid #e2e8f0',
+                      borderTop: '4px solid #8b5cf6',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    <p style={{
+                      color: '#64748b',
+                      fontSize: '18px',
+                      fontWeight: 500,
+                      margin: 0
+                    }}>
+                      तस्वीरें लोड हो रही हैं...
+                    </p>
+                  </div>
+                ) : kendraPhotos.length > 0 ? (
+                  <div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '24px',
+                      padding: '16px 20px',
+                      background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+                      borderRadius: '12px',
+                      border: '1px solid #0ea5e9'
+                    }}>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: '#0c4a6e'
+                      }}>
+                        कुल {kendraPhotos.length} तस्वीरें मिलीं
+                      </h3>
+                      <div style={{
+                        background: '#0ea5e9',
+                        color: 'white',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '14px',
+                        fontWeight: 600
+                      }}>
+                        Latest पौधों की फोटो
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                      gap: '20px'
+                    }}>
+                      {kendraPhotos.map((photo, index) => (
+                        <div key={photo.p_id} style={{
+                          background: 'white',
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                          border: '1px solid #e2e8f0',
+                          transition: 'all 0.3s ease'
+                        }}>
+                          <div style={{
+                            position: 'relative',
+                            height: '200px',
+                            overflow: 'hidden'
+                          }}>
+                            <img
+                              src={`${serverURL}uploads/${photo.photo_url}`}
+                              alt={`Plant ${photo.plant_number}`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                              }}
+                              onError={(e) => {
+                                console.log('Image load error for:', `${serverURL}uploads/${photo.photo_url}`);
+                                e.target.src = 'https://via.placeholder.com/280x200/f1f5f9/64748b?text=No+Image';
+                                e.target.style.backgroundColor = '#f1f5f9';
+                              }}
+                              onLoad={() => {
+                                console.log('Image loaded successfully:', `${serverURL}uploads/${photo.photo_url}`);
+                              }}
+                            />
+                            <div style={{
+                              position: 'absolute',
+                              top: '12px',
+                              right: '12px',
+                              background: 'rgba(0, 0, 0, 0.7)',
+                              color: 'white',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: 600
+                            }}>
+                              पौधा #{photo.plant_number}
+                            </div>
+                          </div>
+                          
+                          <div style={{
+                            padding: '16px'
+                          }}>
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: '12px',
+                              fontSize: '13px'
+                            }}>
+                              <div>
+                                <span style={{ color: '#64748b', fontWeight: 500 }}>अपलोड:</span>
+                                <div style={{ color: '#1e293b', fontWeight: 600, marginTop: '2px' }}>
+                                  {new Date(photo.created_at).toLocaleDateString('hi-IN')}
+                                </div>
+                              </div>
+                              <div>
+                                <span style={{ color: '#64748b', fontWeight: 500 }}>काउंटर:</span>
+                                <div style={{ color: '#1e293b', fontWeight: 600, marginTop: '2px' }}>
+                                  {photo.counter}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {(photo.latitude && photo.longitude) && (
+                              <div style={{
+                                marginTop: '12px',
+                                padding: '8px 12px',
+                                background: '#f8fafc',
+                                borderRadius: '8px',
+                                fontSize: '12px'
+                              }}>
+                                <span style={{ color: '#64748b', fontWeight: 500 }}>Location:</span>
+                                <div style={{ color: '#1e293b', fontWeight: 600, marginTop: '2px' }}>
+                                  {parseFloat(photo.latitude).toFixed(6)}, {parseFloat(photo.longitude).toFixed(6)}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '60px 20px',
+                    gap: '20px'
+                  }}>
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      background: 'linear-gradient(135deg, #f1f5f9, #e2e8f0)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Camera size={36} color="#64748b" />
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <h3 style={{
+                        color: '#1e293b',
+                        fontSize: '20px',
+                        fontWeight: 700,
+                        margin: '0 0 8px 0'
+                      }}>
+                        कोई तस्वीर नहीं मिली
+                      </h3>
+                      <p style={{
+                        color: '#64748b',
+                        fontSize: '16px',
+                        margin: 0
+                      }}>
+                        इस केंद्र के लिए अभी तक कोई पौधों की तस्वीर अपलोड नहीं की गई है।
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
